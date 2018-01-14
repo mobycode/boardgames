@@ -1,0 +1,1 @@
+perl ./bggxml_to_firebase.pl %*

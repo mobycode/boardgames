@@ -1,0 +1,125 @@
+<template>
+<div class="row" :data-filtered="filtered">
+    <div class="col">
+        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2}">
+            <span class="input-group-addon">
+                 <input type="checkbox" v-model="enabled" id="ownersFilterCheckbox" aria-label="Enable owner filter">
+                 <label class="d-sm-none form-check-label pl-1" for="ownersFilterCheckbox">Owners</label>
+            </span>
+            <span class="input-group-addon label d-none d-sm-flex">Owners</span>
+            <div class="input-group-btn" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }">
+                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-owners" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ ownerText }}</button>
+                <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
+                    <div class="form-check dropdown-item">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" v-model="owned" v-bind:value="true" @click="setOwned">Owned
+                        </label>
+                    </div>
+                    <div class="form-check dropdown-item" v-for="owner of allOwners">
+                        <label class="form-check-label" style="margin-left: 25px;">
+                            <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!owned">{{ owner }}
+                        </label>
+                    </div>
+                    <div class="form-check dropdown-item">
+                        <label class="form-check-label">
+                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="false" @click="setOwned">Unowned
+                            </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+
+<script>
+import Filter from './Filter.vue';
+
+const OWNER_IAN = 'Ian';
+const OWNER_JASON = 'Jason';
+const OWNER_JOE = 'Joe';
+const OWNER_JUSTIN = 'Justin';
+
+const DROPDOWN_ID = 'ownerDropdownButtonGroup';
+
+export default {
+    mixins: [Filter],
+    data() {
+        let dropdowns = [{
+                id: DROPDOWN_ID,
+                open: false
+            }],
+            allOwners = [
+                OWNER_IAN,
+                OWNER_JASON,
+                OWNER_JOE,
+                OWNER_JUSTIN,
+            ];
+
+        return {
+            id: 'owner',
+            enabled: true,
+            owned: true,
+            owners: allOwners.slice(),
+            allOwners,
+            dropdowns
+        }
+    },
+    computed: {
+        ownerText() {
+            let str = '';
+            if (this.owned) {
+                let len = this.owners.length;
+                if (len > 0 && len < this.allOwners.length) {
+                    str = this.owners.join(', ');
+                } else {
+                    str = 'anyone';
+                }
+            } else {
+                str = 'no one';
+            }
+            return str;
+        },
+        filteredString() {
+            const str = `${this.enabled}_${this.ownerText}`;
+            console.log(`<> OwnerFilter::filteredString: ${str}`);
+            return str;
+        }
+    },
+    methods: {
+        matches(item) {
+            let action = this.action,
+                matches = true;
+
+            if (this.enabled) {
+                if (this.owned) {
+                    if (this.owners.length === 0) {
+                        matches = (item.owners.length > 0);
+                    } else {
+                        matches = (item.owners.length > 0 && item.owners.some(owner => this.owners.includes(owner)));
+                    }
+                } else {
+                    matches = item.owners.length === 0;
+                }
+            }
+            return matches;
+        },
+        setOwned(evt) {
+            this.owners = evt.target.value === "true" ? this.allOwners.slice() : [];
+        },
+        clickOwner(evt) {
+            const value = evt.target.value,
+                checked = evt.target.checked,
+                idx = this.owners.indexOf(value);
+            if (checked && idx === -1) {
+                this.owners.push(value);
+            } else if (!checked && idx !== -1) {
+                this.owners.splice(idx, 1);
+            }
+        }
+    }
+}
+</script>
+
+<style lang="sass">
+</style>
