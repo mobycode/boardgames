@@ -116,6 +116,53 @@ export default {
             } else if (!checked && idx !== -1) {
                 this.owners.splice(idx, 1);
             }
+        },
+        toQuery() {
+            let query = {},
+                owners;
+
+            if (this.enabled) {
+                if (this.owned) {
+                    if (this.owners.length !== this.allOwners.length) {
+                        owners = this.owners.slice();
+                    }
+                } else {
+                    owners = "none";
+                }
+            } else {
+                owners = "off";
+            }
+
+            query[this.id] = owners;
+
+            this.$router.push({
+                query: Object.assign({}, this.$route.query, query)
+            });
+        },
+        fromQuery() {
+            let query = this.$route.query,
+                val;
+
+            if (query) {
+                val = query[this.id];
+                if (val !== undefined) {
+                    if (val === "all") {
+                        this.enabled = false;
+                    } else {
+                        this.enabled = true;
+                        if (val === "none") {
+                            this.owned = false;
+                        } else if (Array.isArray(val)) {
+                            this.owners = val.slice();
+                        } else {
+                            this.owned = true;
+                            this.owners = this.allOwners.slice();
+                        }
+                    }
+
+                    console.log(`<> OwnerFilter::fromQuery: ${this.owned} ${this.owners}`);
+                }
+            }
         }
     }
 }

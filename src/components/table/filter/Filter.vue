@@ -37,9 +37,12 @@ export default {
     },
     validations: {},
     created() {
+        this.fromQuery();
+
         if (this.enabled) {
             this.filterChanged();
         }
+
         if (this.dropdowns.length > 0) {
             window.addEventListener('click', (evt) => {
                 for (let dropdown of this.dropdowns) {
@@ -53,10 +56,17 @@ export default {
     },
     methods: {
         matches() {
-            console.log("Extending filter must override Filter::matches");
+            console.log(`${this.id} must implement matches`);
             return true;
         },
+        toQuery() {
+            console.log(`${this.id} must implement toQuery`);
+        },
+        fromQuery() {
+            console.log(`${this.id} must implement fromQuery`);
+        },
         filterChanged() {
+            this.toQuery();
             this.$store.dispatch('updateFilter', {
                 filter: this
             });

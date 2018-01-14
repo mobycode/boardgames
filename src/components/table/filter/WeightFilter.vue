@@ -49,12 +49,7 @@ export default {
 
         return {
             id: 'weight',
-            enabled: false,
-            value: undefined,
-            minValue: undefined,
-            maxValue: undefined,
             dropdowns,
-            actionIndex: 0,
             actions,
             valuePrecision: 2,
             valueProperty: 'weight'

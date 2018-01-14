@@ -34,17 +34,25 @@ export default {
             }
 
             return matches;
-        }
-    },
-    created() {
-        if (this.enabled) {
-            this.$store.dispatch('updateFilter', {
-                filter: this
+        },
+        toQuery() {
+            this.$router.push({
+                query: Object.assign({}, this.$route.query, {
+                    exp: this.enabled ? undefined : "true"
+                })
             });
+        },
+        fromQuery() {
+            let query = this.$route.query;
+            if (query) {
+                this.enabled = (query.exp !== "true");
+                console.log(`<> ExpansionFilter::fromQuery: ${this.enabled}`);
+            }
         }
     },
     watch: {
         enabled(val) {
+            this.toQuery();
             this.filterChanged();
         }
     }

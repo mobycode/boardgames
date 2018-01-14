@@ -19,8 +19,10 @@ export default {
     mixins: [Filter],
     data() {
         return {
-            dropdowns: [],
-            actionIndex: 1,
+            value: undefined,
+            minValue: undefined,
+            maxValue: undefined,
+            actionIndex: 0,
             actions: [],
             valuePrecision: 0,
             valueProperty: ''
@@ -55,6 +57,7 @@ export default {
         },
         invalid() {
             let invalid;
+            console.log(`<> NumberFilter::invalid: ${this.id} - ${this.valueCount} ${this.action}`);
             if (this.valueCount === 1) {
                 invalid = this.$v.value.$invalid;
             } else if (this.valueCount === 2) {
@@ -73,9 +76,11 @@ export default {
                 } else if (this.valueCount === 2) {
                     str += `_${this.minValue}_${this.maxValue}`;
                 }
-                this._oldFilteredString = str;
-                console.log(`<> NumberFilter::filteredString: ${str}`);
+            } else {
+                str = 'invalid';
             }
+            this._oldFilteredString = str;
+            console.log(`<> NumberFilter::filteredString: ${this.id} - ${this.invalid} ${str}`);
             return str;
         }
     },
@@ -138,7 +143,7 @@ export default {
                         break;
                 }
                 if (item.objectid === "174430") {
-                    console.log('<> NumberFilter::matches: name [' + item.name + '] ? ' + matches);
+                    console.log('<> NumberFilter::matches: ${this.id} - name [' + item.name + '] ? ' + matches);
                 }
             }
 
@@ -166,8 +171,59 @@ export default {
         autoEnable(evt) {
             if (!this.invalid) {
                 this.enabled = true;
-                console.log(`<> NumberFilter::autoEnable`);
+                console.log(`<> NumberFilter::autoEnable: ${this.id}`);
             }
+        },
+        toQuery() {
+            let query = {},
+                idx, val, min, max;
+
+            if (this.enabled && !this.invalid) {
+                idx = this.actionIndex;
+                if (this.valueCount === 1) {
+                    val = this.value;
+                } else if (this.valueCount === 2) {
+                    min = this.minValue;
+                    max = this.maxValue;
+                }
+            }
+
+            query[this.id + 'Idx'] = idx;
+            query[this.id + 'Val'] = val;
+            query[this.id + 'Min'] = min;
+            query[this.id + 'Max'] = max;
+
+            this.$router.push({
+                query: Object.assign({}, this.$route.query, query)
+            });
+        },
+        fromQuery() {
+            let filterQuery,
+                query = this.$route.query,
+                parser = Number[this.valuePrecision === 0 ? 'parseInt' : 'parseFloat'],
+                parseNumber = (val) => {
+                    return val ? parser(val, 10) : undefined;
+                },
+                val, min, max, idx;
+
+
+            //console.log(`-> NumberFilter::fromQuery: ${this.id} ${query}`);
+
+            if (query && query[this.id + 'Idx']) {
+                this.value = parseNumber(query[this.id + 'Val']);
+                this.minValue = parseNumber(query[this.id + 'Min']);
+                this.maxValue = parseNumber(query[this.id + 'Max']);
+                this.actionIndex = parseNumber(query[this.id + 'Idx']);
+
+                this.$v.value.$touch();
+                this.$v.minValue.$touch();
+                this.$v.maxValue.$touch();
+
+                this.enabled = true;
+                console.log(`<> NumberFilter::fromQuery: ${this.id} - ${this.actionIndex} ${this.value} ${this.minValue} ${this.maxValue}`);
+            }
+
+            //console.log(`<- NumberFilter::fromQuery: ${this.id}`);
         }
     }
 }

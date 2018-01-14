@@ -165,20 +165,20 @@ const state = {
 
 const mutations = {
     'TOGGLE_DESKTOP_SITE' (state) {
-        _log("<> TOGGLE_DESKTOP_SITE: "+!state.desktopSite);
+        console.log("<> TOGGLE_DESKTOP_SITE: "+!state.desktopSite);
         state.desktopSite = !state.desktopSite;
     },
     'SET_DEVICE_SIZE' (state, deviceSize) {
-        //_log("<> SET_DEVICE_SIZE: "+deviceSize);
+        //console.log("<> SET_DEVICE_SIZE: "+deviceSize);
         state.deviceSize = deviceSize;
     },
     'LOAD_ERROR' (state, response) {
-        _log("-> LOAD_ERROR");
+        console.log("-> LOAD_ERROR");
         state.loadError = true;
-        _log("<- LOAD_ERROR");
+        console.log("<- LOAD_ERROR");
     },
     'SET_ITEMS' (state, itemsMap) {
-        _log("-> SET_ITEMS");
+        console.log("-> SET_ITEMS");
 
         // create store items from itemMap items
         let items = [],
@@ -186,7 +186,7 @@ const mutations = {
 
         Object.keys(itemsMap).forEach( (objectid) => {
             item = itemsMap[objectid];
-            //_log("   SET_ITEMS: -> itemsMap.forEach: item.name ["+item.name+"]");
+            //console.log("   SET_ITEMS: -> itemsMap.forEach: item.name ["+item.name+"]");
 
             item.objectid = objectid;
 
@@ -199,14 +199,17 @@ const mutations = {
             item.ownersString = formatOwners(item.owners);
 
             items.push(item);
-            //_log("   SET_ITEMS: <- itemsMap.forEach");
+            //console.log("   SET_ITEMS: <- itemsMap.forEach");
         });
 
         state.items = items;
+        console.log("   SET_ITEMS: set");
         filterItems(state);
+        console.log("   SET_ITEMS: filtered");
         sortItems(state);
+        console.log("   SET_ITEMS: sortred");
 
-        _log("<- SET_ITEMS");
+        console.log("<- SET_ITEMS");
     },
     'SET_TIME' (state, time) {
         state.time = time;

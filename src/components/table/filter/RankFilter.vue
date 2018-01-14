@@ -52,10 +52,6 @@ export default {
 
         return {
             id: 'rank',
-            enabled: false,
-            value: undefined,
-            minValue: undefined,
-            maxValue: undefined,
             dropdowns,
             actionIndex: 1,
             actions,

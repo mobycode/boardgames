@@ -64,7 +64,7 @@ export default {
             if (value !== -1) {
                 ts = moment(value).format('MM/DD/YYYY hh:mm:ss')
             }
-            //_log("<> formatDate(" + value + "): " + ts);
+            //console.log("<> formatDate(" + value + "): " + ts);
             return ts;
         }
     }

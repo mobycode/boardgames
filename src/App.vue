@@ -1,7 +1,7 @@
 <template>
 <div class="container-fluid" :class="classObject">
     <div v-for="(value, key) in DEVICE_SIZES" class="device-detector" :class="value"></div>
-    <app-table></app-table>
+    <router-view></router-view>
 </div>
 </template>
 

@@ -55,13 +55,8 @@ export default {
         }];
 
         return {
-            id: 'player-count',
-            enabled: false,
-            value: undefined,
-            minValue: undefined,
-            maxValue: undefined,
+            id: 'players',
             dropdowns,
-            actionIndex: 0,
             actions,
             valueProperty: 'bestplayers',
             minValueProperty: 'minplayers',

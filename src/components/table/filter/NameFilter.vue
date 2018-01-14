@@ -10,7 +10,7 @@
             <div class="input-group-btn" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }">
                 <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-name" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ actionText }}</button>
                 <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
-                    <a v-for="(obj, action) in actionInfo" class="dropdown-item" href="javascript:void(0);" @click="setAction(action, $event)">{{ obj.text }}</a>
+                    <a v-for="(action, index) in actions" class="dropdown-item" href="javascript:void(0);" @click="setAction(index, $event)">{{ action.text }}</a>
                 </div>
             </div>
             <input id="value" placeholder="Name" v-model="value" @keyup="autoEnable" type="text" class="form-control">
@@ -32,22 +32,18 @@ const DROPDOWN_ID = 'nameDropdownButtonGroup';
 export default {
     mixins: [Filter],
     data() {
-        let actionInfo = {};
-        actionInfo[ACTION_CONTAINS] = {
+        let actions = [{
             text: 'contains',
             method: 'includes'
-        };
-        actionInfo[ACTION_EQUALS] = {
+        }, {
             text: 'is'
-        };
-        actionInfo[ACTION_STARTS_WITH] = {
+        }, {
             text: 'starts with',
             method: 'startsWith'
-        };
-        actionInfo[ACTION_ENDS_WITH] = {
+        }, {
             text: 'ends with',
             method: 'endsWith'
-        };
+        }];
 
         let dropdowns = [{
             id: DROPDOWN_ID,
@@ -58,30 +54,33 @@ export default {
             id: 'name',
             value: '',
             dropdowns,
-            action: ACTION_CONTAINS,
-            actionInfo
+            actionIndex: 0,
+            actions
         }
     },
     computed: {
+        action() {
+            return this.actions[this.actionIndex];
+        },
         actionText() {
-            return this.actionInfo[this.action].text;
+            return this.actions[this.actionIndex].text;
         },
         filteredString() {
-            const str = `${this.action}_${this.enabled}_${this.value}`;
+            const str = `${this.actionIndex}_${this.enabled}_${this.value}`;
             console.log(`<> NameFilter::filteredString: ${str}`);
             return str;
         }
     },
     methods: {
         matches(item) {
-            let action = this.action,
+            let method = this.action.method,
                 matches = true;
 
-            if (this.enabled && this.action !== "") {
-                if (action === ACTION_EQUALS) {
+            if (this.enabled) {
+                if (method === undefined) {
                     matches = (this.value.toLowerCase() === item.name.toLowerCase());
                 } else {
-                    matches = item.name.toLowerCase()[this.actionInfo[action].method](this.value.toLowerCase());
+                    matches = item.name.toLowerCase()[method](this.value.toLowerCase());
                 }
                 if (item.objectid === "174430") {
                     console.log('<> NameFilter::matches: name [' + item.name + '] ? ' + matches);
@@ -90,11 +89,11 @@ export default {
 
             return matches;
         },
-        setAction(action, evt) {
-            let oldAction = this.action;
+        setAction(actionIndex, evt) {
+            let oldActionIndex = this.actionIndex;
             this.dropdowns[0].open = false;
-            if (oldAction !== action) {
-                this.action = action;
+            if (oldActionIndex !== actionIndex) {
+                this.actionIndex = actionIndex;
             }
             setTimeout(() => {
                 this.focusInput();
@@ -112,6 +111,33 @@ export default {
         autoEnable(evt) {
             this.enabled = (this.value !== '');
             //console.log("<> NameFilter::autoEnable: "+this.enabled);
+        },
+        toQuery() {
+            let query = {},
+                val, idx;
+
+            if (this.enabled && this.value !== '') {
+                val = this.value;
+                idx = this.actionIndex;
+            }
+
+            this.$router.push({
+                query: Object.assign({}, this.$route.query, {
+                    name: val,
+                    nameIdx: idx
+                })
+            });
+        },
+        fromQuery() {
+            let query = this.$route.query;
+
+            if (query && query.name && query.nameIdx) {
+                this.value = query.name;
+                this.actionIndex = query.nameIdx;
+                this.enabled = true;
+
+                console.log(`<> NameFilter::fromQuery: ${this.actionIndex} ${this.value}`);
+            }
         }
     }
 }
