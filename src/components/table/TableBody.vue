@@ -1,44 +1,46 @@
 <template>
-<div class="row tbody">
-    <div class="col" :class="{loading: loading}">
-        <div v-if="loading" class="text-center">
-            <i class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
-            <span class="sr-only">Loading...</span>
-        </div>
-        <div v-else-if="loadError" class="row justify-content-center">
-            <div class="col-10 col-sm-8 col-md-6 col-lg-4 alert alert-danger load-error" role="alert">
-                <h5 class="alert-heading">Error loading games</h5>
-                <hr>
-                <p>An error occurred retrieving games from the database. This is probably your fault.</p>
-                <p>Ensure your browser is not blocking database requests and reload the page.</p>
-                <p class="mb-0">Again, I blame you. Bad, user! Bad!</p>
+<div class="container-fluid tbody">
+    <div class="row">
+        <div class="col" :class="{loading: loading}">
+            <div v-if="loading" class="text-center">
+                <i class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
+                <span class="sr-only">Loading...</span>
             </div>
-        </div>
-        <div v-else>
-            <div id="gameImagePopup" v-show="imagePopupSrc">
-                <img :src="imagePopupSrc"></src>
+            <div v-else-if="loadError" class="row justify-content-center">
+                <div class="col-10 col-sm-8 col-md-6 col-lg-4 alert alert-danger load-error" role="alert">
+                    <h5 class="alert-heading">Error loading games</h5>
+                    <hr>
+                    <p>An error occurred retrieving games from the database. This is probably your fault.</p>
+                    <p>Ensure your browser is not blocking database requests and reload the page.</p>
+                    <p class="mb-0">Again, I blame you. Bad, user! Bad!</p>
+                </div>
             </div>
-            <div v-if="filteredItems.length === 0" class="row tr nomatches">
-                <div class="td col-12 text-center text-muted">No matches</div>
-            </div>
-            <div v-for="(item, idx) in filteredItems" class="row tr" :class="{'bg-light': idx%2===0}" v-else>
-                <div class="td d-none d-sm-block col-sm col-md col-lg-1 col-xl-1 rank"><span :title="item.rank | formatRank">{{ item.rank | formatRank }}</span></div>
-                <div class="td col-6 col-sm-5 col-md-4 col-lg-3 col-xl-3 name"><span><a :href="item | formatHref" :title="item.name" target="_blank" @mouseenter="showImagePopup(item, $event)" @mouseout="hideImagePopup(item, $event)">{{ item.name }}</a></span></div>
-                <div class="td d-none d-sm-block col-sm col-md col-lg-1 col-xl-1 weight"><span :title="item.weight | formatWeight">{{ item.weight | formatWeight }}</span></div>
-                <div class="td d-none d-lg-block col-lg col-xl players">
-                    <div class="row">
-                        <div class="col-6 minplayers"><span :title="item.minplayers">{{ item.minplayers }}</span></div>
-                        <div class="col-6 maxplayers"><span :title="item.maxplayers">{{ item.maxplayers }}</span></div>
+            <div v-else>
+                <div id="gameImagePopup" v-show="imagePopupSrc">
+                    <img :src="imagePopupSrc"></src>
+                </div>
+                <div v-if="filteredItems.length === 0" class="row tr nomatches">
+                    <div class="td col-12 text-center text-muted">No matches</div>
+                </div>
+                <div v-for="(item, idx) in filteredItems" class="row tr" :class="{'bg-light': idx%2===0}" v-else>
+                    <div class="td d-none d-sm-block col-sm col-md col-lg-1 col-xl-1 rank"><span :title="item.rank | formatRank">{{ item.rank | formatRank }}</span></div>
+                    <div class="td col-6 col-sm-5 col-md-4 col-lg-3 col-xl-3 name"><span><a :href="item | formatHref" :title="item.name" target="_blank" @mouseenter="showImagePopup(item, $event)" @mouseout="hideImagePopup(item, $event)">{{ item.name }}</a></span></div>
+                    <div class="td d-none d-sm-block col-sm col-md col-lg-1 col-xl-1 weight"><span :title="item.weight | formatWeight">{{ item.weight | formatWeight }}</span></div>
+                    <div class="td d-none d-lg-block col-lg col-xl players">
+                        <div class="row">
+                            <div class="col-6 minplayers"><span :title="item.minplayers">{{ item.minplayers }}</span></div>
+                            <div class="col-6 maxplayers"><span :title="item.maxplayers">{{ item.maxplayers }}</span></div>
+                        </div>
                     </div>
+                    <div class="td col-3 col-sm col-md d-lg-none players"><span :title="item | formatPlayers">{{ item | formatPlayers(deviceSizeValue) }}</span></div>
+                    <div class="td d-none d-md-block col-md col-lg-1 col-xl-1 bestplayers"><span :title="item.bestplayersString">{{ item.bestplayersString }}</span></div>
+                    <div class="td d-none d-lg-block col-lg col-xl-1 recplayers"><span :title="item.recplayersString">{{ item.recplayersString }}</span></div>
+                    <div class="td col-3 col-sm col-md col-lg col-xl-1 playtime">
+                        <span :title="item | formatPlayTime">{{ item | formatPlayTime }}</span>
+                    </div>
+                    <div class="td d-none d-md-block col-md col-lg-1 col-xl-1 numplays"><span :title="item.numplays ? item.numplays[selectedOwner] : ''">{{ item.numplays ? item.numplays[selectedOwner] : "" }}</span></div>
+                    <div class="td d-none d-lg-block col-lg col-xl owners"><span :title="item.ownersString">{{ item.ownersString }}</span></div>
                 </div>
-                <div class="td col-3 col-sm col-md d-lg-none players"><span :title="item | formatPlayers">{{ item | formatPlayers(deviceSizeValue) }}</span></div>
-                <div class="td d-none d-md-block col-md col-lg-1 col-xl-1 bestplayers"><span :title="item.bestplayersString">{{ item.bestplayersString }}</span></div>
-                <div class="td d-none d-lg-block col-lg col-xl-1 recplayers"><span :title="item.recplayersString">{{ item.recplayersString }}</span></div>
-                <div class="td col-3 col-sm col-md col-lg col-xl-1 playtime">
-                    <span :title="item | formatPlayTime">{{ item | formatPlayTime }}</span>
-                </div>
-                <div class="td d-none d-md-block col-md col-lg-1 col-xl-1 numplays"><span :title="item.numplays ? item.numplays[selectedOwner] : ''">{{ item.numplays ? item.numplays[selectedOwner] : "" }}</span></div>
-                <div class="td d-none d-lg-block col-lg col-xl owners"><span :title="item.ownersString">{{ item.ownersString }}</span></div>
             </div>
         </div>
     </div>
@@ -152,10 +154,6 @@ export default {
 </script>
 
 <style lang="sass">
-$miscHeight: 200px
-$headerHeight: 56px
-$scrollbarWidth: 18px
-
 .tbody
     /*height: calc(100vh - 110px)*/
     overflow-y: auto

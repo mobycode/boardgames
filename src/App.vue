@@ -37,9 +37,6 @@ export default {
 
         window.addEventListener('resize', (evt) => {
             this.setDeviceSize();
-            if (this.$children && this.$children.length > 0) {
-                this.$children[0].resize();
-            }
         });
     },
     mounted() {

@@ -1,23 +1,25 @@
 <template>
-<div class="row thead" :class="{ 'sort-descending': isSortDescending }">
-    <div class="th sortable d-none d-sm-block col-sm col-md col-lg-1 col-xl-1" @click="sortBy('rank')"><span :class="{ sorted: isSorted('rank') }">Rank</span></div>
-    <div class="th sortable col-6 col-sm-5 col-md-4 col-lg-3 col-xl-3" @click="sortBy('name')"><span :class="{ sorted: isSorted('name') }">Name</span></div>
-    <div class="th sortable d-none d-sm-block col-sm col-md col-lg-1 col-xl-1" @click="sortBy('weight')"><span :class="{ sorted: isSorted('weight') }">Wei<wbr>ght</span></div>
-    <div class="th d-none d-lg-block col-lg col-xl">
-        <div class="row">
-            <div class="col">Players</div>
+<div class="container-fluid thead">
+    <div class="row" :class="{ 'sort-descending': isSortDescending }">
+        <div class="th sortable d-none d-sm-block col-sm col-md col-lg-1 col-xl-1" @click="sortBy('rank')"><span :class="{ sorted: isSorted('rank') }">Rank</span></div>
+        <div class="th sortable col-6 col-sm-5 col-md-4 col-lg-3 col-xl-3" @click="sortBy('name')"><span :class="{ sorted: isSorted('name') }">Name</span></div>
+        <div class="th sortable d-none d-sm-block col-sm col-md col-lg-1 col-xl-1" @click="sortBy('weight')"><span :class="{ sorted: isSorted('weight') }">Wei<wbr>ght</span></div>
+        <div class="th d-none d-lg-block col-lg col-xl">
+            <div class="row">
+                <div class="col">Players</div>
+            </div>
+            <div class="row">
+                <div class="sortable col-6" @click="sortBy('minplayers')"><span :class="{ sorted: isSorted('minplayers') }">Min</span></div>
+                <div class="sortable col-6" @click="sortBy('maxplayers')"><span :class="{ sorted: isSorted('maxplayers') }">Max</span></div>
+            </div>
         </div>
-        <div class="row">
-            <div class="sortable col-6" @click="sortBy('minplayers')"><span :class="{ sorted: isSorted('minplayers') }">Min</span></div>
-            <div class="sortable col-6" @click="sortBy('maxplayers')"><span :class="{ sorted: isSorted('maxplayers') }">Max</span></div>
-        </div>
+        <div class="th sortable col-3 col-sm col-md d-lg-none" @click="sortBy('players')"><span :class="{ sorted: isSorted('players') }">Play<wbr>ers</span></div>
+        <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('bestplayers')"><span :class="{ sorted: isSorted('bestplayers') }">Best</span></div>
+        <div class="th sortable d-none d-lg-block col-lg col-xl-1" @click="sortBy('recplayers')"><span :class="{ sorted: isSorted('recplayers') }">Recom<wbr>mended</span></div>
+        <div class="th sortable col-3 col-sm col-md col-lg col-xl-1" @click="sortBy('maxplaytime')"><span :class="{ sorted: isSorted('maxplaytime') }">Play<br>Time</span></div>
+        <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('numplays')"><span :class="{ sorted: isSorted('numplays') }">Plays<br>Logged</span></div>
+        <div class="th sortable d-none d-lg-block col-lg col-xl" @click="sortBy('owners')"><span :class="{ sorted: isSorted('owners') }">Owners</span></div>
     </div>
-    <div class="th sortable col-3 col-sm col-md d-lg-none" @click="sortBy('players')"><span :class="{ sorted: isSorted('players') }">Play<wbr>ers</span></div>
-    <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('bestplayers')"><span :class="{ sorted: isSorted('bestplayers') }">Best</span></div>
-    <div class="th sortable d-none d-lg-block col-lg col-xl-1" @click="sortBy('recplayers')"><span :class="{ sorted: isSorted('recplayers') }">Recom<wbr>mended</span></div>
-    <div class="th sortable col-3 col-sm col-md col-lg col-xl-1" @click="sortBy('maxplaytime')"><span :class="{ sorted: isSorted('maxplaytime') }">Play<br>Time</span></div>
-    <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('numplays')"><span :class="{ sorted: isSorted('numplays') }">Plays<br>Logged</span></div>
-    <div class="th sortable d-none d-lg-block col-lg col-xl" @click="sortBy('owners')"><span :class="{ sorted: isSorted('owners') }">Owners</span></div>
 </div>
 </template>
 
@@ -88,13 +90,7 @@ export default {
 </script>
 
 <style lang="sass">
-$miscHeight: 200px
-$headerHeight: 56px
-$scrollbarWidth: 18px
 
-.not-scrolling .thead,
-.mobile .thead
-    padding-right: 0px
 .thead
     color: #333
     /*background-color: #f5f5f5*/
@@ -102,7 +98,6 @@ $scrollbarWidth: 18px
     /* border-top: 1px solid #e9ecef*/
     border-bottom: 2px solid #e9ecef
     padding-top: 8px
-    padding-right: $scrollbarWidth
     padding-bottom: 8px
 
     .th

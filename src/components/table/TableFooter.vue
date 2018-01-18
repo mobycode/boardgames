@@ -1,11 +1,11 @@
 <template>
-<div>
-    <div class="row tfoot">
-        <div class="td col-6">
+<div class="container-fluid tfoot">
+    <div class="row">
+        <div class="td col-6 pl-0">
             <span class="pull-left d-none d-md-block">{{ summary }}</span>
             <span class="pull-left d-md-none">{{ miniSummary }}</span>
         </div>
-        <div class="td col-6">
+        <div class="td col-6 pr-0">
             <span class="pull-right"><span class="d-none d-md-inline-block" v-if="time !== -1">Updated:&nbsp;</span>{{ time | formatDateTime }}</span>
         </div>
     </div>
@@ -72,8 +72,6 @@ export default {
 </script>
 
 <style lang="sass">
-$scrollbarWidth: 18px
-
 .tfoot
     color: #333
     border-top: 2px solid #e9ecef
