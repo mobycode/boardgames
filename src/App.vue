@@ -7,7 +7,6 @@
 
 <script>
 import moment from 'moment'
-import Header from './components/Header.vue';
 import Table from './components/table/Table.vue';
 
 
@@ -16,7 +15,6 @@ const DEVICE_SIZES = ['sm', 'md', 'lg', 'xl'];
 export default {
     name: 'app',
     components: {
-        appHeader: Header,
         appTable: Table
     },
     data() {
