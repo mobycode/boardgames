@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="apple-touch-icon" href="./favicon.png" />
-    <link rel="shortcut icon" href="./favicon.png" type="image/png" />
-    <link rel="icon" href="./favicon.png" type="image/png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="/touch-icon-iphone.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/touch-icon-ipad.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/touch-icon-iphone-retina.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/touch-icon-ipad-retina.png">
+    <link rel="shortcut icon" href="/favicon.png?v=2" type="image/png" />
+    <link rel="icon" href="/favicon.png?v=2" type="image/png" />
     <title>Board Game Collections</title>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.2/css/all.css">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css">
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.7.0/moment.min.js"></script>
     <script type="text/javascript" src="//cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.js"></script>
     <style>
-        body {
-            margin: 15px;
-        }
     </style>
   </head>
-  <body>
+  <body onload="setTimeout(function() { window.scrollTo(0,1); }, 100);">
     <div id="app">
     </div>
-    <script src="./dist/build.js"></script>
+    <script src="/dist/build.js"></script>
   </body>
 </html>

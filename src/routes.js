@@ -1,5 +1,18 @@
+import Loading from './components/Loading.vue';
+import LoadError from './components/LoadError.vue';
+import Games from './components/Games.vue';
 import Table from './components/table/Table.vue';
+import Tiles from './components/Tiles.vue';
 
 export const routes = [
-    { path: '*', component: Table }
+    { path: '', component: Loading },
+    { path: '/loading', component: Loading },
+    { path: '/load-error', component: LoadError },
+    { path: '/data', component: Games, children: [
+         { path: '', component: Table },
+         { name: 'table', path: 'table', component: Table },
+         { name: 'tiles', path: 'tiles', component: Tiles },
+         { path: '*', component: Table }
+    ]},
+    { path: '*', component: Games },
 ];

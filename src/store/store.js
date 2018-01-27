@@ -141,12 +141,13 @@ const ALL_OWNERS = [
     OWNER_JUSTIN,
 ];
 
-const MOBILE = /android|iphone|ipad/i.test(navigator.userAgent);
+const MOBILE = true || /android|iphone|ipad/i.test(navigator.userAgent);
 const DEVICE_SIZES = ['sm', 'md', 'lg', 'xl'];
 
 const state = {
     desktopSite: !MOBILE,
     deviceSize: 'xs',
+    mobileHeight: -1,
     loadError : false,
     items: [],
     time: -1,
@@ -167,6 +168,10 @@ const mutations = {
     'TOGGLE_DESKTOP_SITE' (state) {
         console.log("<> TOGGLE_DESKTOP_SITE: "+!state.desktopSite);
         state.desktopSite = !state.desktopSite;
+    },
+    'SET_MOBILE_HEIGHT' (state, mobileHeight) {
+        //console.log("<> SET_MOBILE_HEIGHT: "+mobileHeight);
+        state.mobileHeight = mobileHeight;
     },
     'SET_DEVICE_SIZE' (state, deviceSize) {
         //console.log("<> SET_DEVICE_SIZE: "+deviceSize);
@@ -283,6 +288,11 @@ const actions = {
         commit('SET_DEVICE_SIZE', update.deviceSize);
         console.log('<- store::setDeviceSize');
     },
+    setMobileHeight({commit}, update) {
+        console.log('-> store::setMobileHeight');
+        commit('SET_MOBILE_HEIGHT', update.mobileHeight);
+        console.log('<- store::setMobileHeight');
+    },
     updateFilter({commit}, update) {
         console.log('-> store::updateFilter');
         commit('UPDATE_FILTER', update.filter);
@@ -304,22 +314,26 @@ const actions = {
         console.log('<- store::setSelectedOwner');
     },
     loadStore({commit}) {
-        Vue.http.get('data.json')
-            .then(response => response.json())
-            .then(data => {
-                if (data) {
-                    const items = data.items;
-                    const time = data.time;
-                    console.log("<- loadStore: items ["+Object.keys(items).length+"] time ["+time+"]");
-                    commit('SET_ITEMS', items);
-                    commit('SET_TIME', time);
-                    console.log("<- loadStore");
-                }
-            }, response => {
-                console.log('loadStore error')
-                commit('LOAD_ERROR', response)
-                console.log(response)
-            });
+        return new Promise((resolve, reject) => {
+            Vue.http.get('data.json')
+                .then(response => response.json())
+                .then(data => {
+                    if (data) {
+                        const items = data.items;
+                        const time = data.time;
+                        console.log("<- loadStore: items ["+Object.keys(items).length+"] time ["+time+"]");
+                        commit('SET_ITEMS', items);
+                        commit('SET_TIME', time);
+                        resolve(data);
+                        console.log("<- loadStore");
+                    }
+                }, response => {
+                    console.log('loadStore error')
+                    commit('LOAD_ERROR', response)
+                    reject(response);
+                    console.log(response)
+                });
+        })
     }
 };
 
@@ -332,6 +346,9 @@ const getters = {
     },
     deviceSizes(state) {
         return DEVICE_SIZES;
+    },
+    mobileHeight(state) {
+        return state.mobileHeight;
     },
     deviceSize(state) {
         return state.deviceSize;

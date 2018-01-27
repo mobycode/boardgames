@@ -24,8 +24,6 @@
 </template>
 
 <script>
-import VueSlider from 'vue-slider-component';
-
 import {
     mapGetters,
     mapActions
