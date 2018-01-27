@@ -55,17 +55,23 @@ export default {
     created() {
         //setTimeout(() => { // uncomment to test store loading
         let name = this.$route.name;
-        this.$router.push('/loading');
+        this.$router.push({
+            name: 'loading'
+        });
         this.$store.dispatch('loadStore').then((data) => {
             if (name) {
                 this.$router.push({
                     name: name
                 });
             } else {
-                this.$router.push('/data');
+                this.$router.push({
+                    name: 'data'
+                });
             }
         }, (error) => {
-            this.$router.push('/load-error');
+            this.$router.push({
+                name: 'load-error'
+            });
         });
         //}, 10000);
         this.classObject.mobile = this.mobile;
