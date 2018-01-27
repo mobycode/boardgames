@@ -5,7 +5,7 @@
             <div class="row">
                 <div class="col">
                     <div style="display: inline-block; vertical-align: middle;">
-                        <div :class="{ dropup: settingsExpanded, dropdown: !settingsExpanded }" @click="expandCollapseSettings">
+                        <div class="settings" :class="{ dropup: settingsExpanded, dropdown: !settingsExpanded }" @click="expandCollapseSettings">
                             <i class="fa fa-cogs" :class="{'fa-lg': !smallIcons}"></i>
                             <i class="fa" :class="{ 'fa-lg': !smallIcons, 'fa-caret-down': !settingsExpanded, 'fa-caret-up': settingsExpanded}"></i>
                         </div>
@@ -13,6 +13,12 @@
                     <div style="display: inline-block; vertical-align: middle;">
                         <div class="desktop-site-toggle ml-3" @click="toggleDesktopSite" :title="desktopSite ? 'Request moble site' : 'Request desktop site'">
                             <i class="fa" :class="{'fa-lg': !smallIcons, 'fa-mobile-alt': desktopSite, 'fa-desktop': !desktopSite}"></i>
+                        </div>
+                    </div>
+                    <div class="btn-toolbar view-toggle" role="toolbar" aria-label="Toolbar with button groups">
+                        <div class="btn-group mr-2" role="group" aria-label="First group">
+                            <button type="button" class="btn" :class="{'btn-outline-secondary': !tableToggled}" :disabled="tableToggled" @click="onTable"><i class="fa fa-table" :class="{'fa-lg': !smallIcons}"></i></button>
+                            <button type="button" class="btn" :class="{'btn-outline-secondary':  tableToggled}" :disabled="!tableToggled" @click="onTiles"><i class="fa fa-th" :class="{'fa-lg': !smallIcons}"></i></button>
                         </div>
                     </div>
                 </div>
@@ -25,7 +31,7 @@
                     </div>
                 </div>
             </div>
-            <transition name="fade" mode="out-in" v-on:after-enter="expandAfterEnter" v-on:after-leave="expandAfterLeave">
+            <transition name="fade" mode="out-in">
                 <div class="settings" v-show="settingsExpanded">
                     <ul class="nav" v-if="deviceSizeValue > 0">
                         <li class="nav-item">
@@ -80,6 +86,9 @@ export default {
         },
         smallIcons() {
             return this.deviceSizeValue < 2;
+        },
+        tableToggled() {
+            return !(this.$route && this.$route.name === 'tiles');
         }
     },
     methods: {
@@ -89,6 +98,16 @@ export default {
         },
         setActiveSettings(selected) {
             this.activeSettings = selected;
+        },
+        onTable() {
+            this.$router.push({
+                name: 'table'
+            });
+        },
+        onTiles() {
+            this.$router.push({
+                name: 'tiles'
+            });
         },
         toggleDesktopSite() {
             let content = 'width=device-width, initial-scale=1',
@@ -152,9 +171,30 @@ export default {
 .toolbar
     color: #333
     border-color: #ddd
-    padding-top: 8px
     padding-bottom: 8px
+    overflow: visible
 
+    .settings.dropup
+        color: #0056b3
+
+    .view-toggle
+        display: inline
+        .btn + .btn
+            padding-left: 0px
+        .btn
+            box-shadow: none !important
+        .btn:focus
+            i
+                color: #0056b3
+        .btn,
+        .btn:focus,
+        .btn:active,
+        .btn.active
+            background-color: #fff
+            color: #0056b3
+        .btn.btn-outline-secondary
+            color: #000
+            border: 0
     .nav-link.active
         color: #333
         font-weight: bold
@@ -180,6 +220,9 @@ export default {
         .section
             .row + .row
                 margin-top: 50px
+
+body.kb-nav-used .view-toggle .btn:focus i
+    outline: -webkit-focus-ring-color auto 5px
 
 .fade-enter-active
     animation: fade-in 200ms ease-out forwards

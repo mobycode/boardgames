@@ -1,6 +1,6 @@
 <template>
 <div class="container-fluid tfoot">
-    <div class="row">
+    <div class="row ml-0 mr-0">
         <div class="td col-6 pl-0">
             <span class="pull-left d-none d-md-block">{{ summary }}</span>
             <span class="pull-left d-md-none">{{ miniSummary }}</span>
@@ -72,6 +72,12 @@ export default {
 </script>
 
 <style lang="sass">
+@media only screen and (max-width : 450px)
+    .tfoot
+        .row
+            //padding-left: 1rem
+            //padding-right: 1rem
+
 .tfoot
     color: #333
     border-top: 2px solid #e9ecef
