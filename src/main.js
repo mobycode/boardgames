@@ -16,7 +16,6 @@ Vue.use(VueResource)
 Vue.http.options.root = 'https://bgg-games.firebaseio.com/';
 
 const router = new VueRouter({
-    mode: 'history',
     routes: routes
 })
 
