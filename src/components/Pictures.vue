@@ -212,6 +212,7 @@ export default {
         position: relative
         .rank a,
         .name a
+            font-size: 12px
             color: white
             position: absolute
             transform: translateX(-50%)
@@ -253,10 +254,13 @@ export default {
     .pic-thumbnail
         width: 240px
 .device-sm .pic-parent .pic
+    .rank a,
+    .name a
+        font-size: 10px
     .pic-picture,
     .pic-thumbnail
         width: 230px
-.pic-parent .pic
+.device-xs .pic-parent .pic
     .rank a,
     .name a
         font-size: 10px
