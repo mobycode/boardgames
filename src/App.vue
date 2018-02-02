@@ -30,9 +30,9 @@ export default {
     components: {},
     data() {
         const DEVICE_SIZES = {
-            'sm': 'device-sm d-none d-sm-block',
-            'md': 'device-md d-none d-md-block',
-            'lg': 'device-lg d-none d-lg-block',
+            'sm': 'device-sm d-none d-sm-block d-md-none',
+            'md': 'device-md d-none d-md-block d-lg-none',
+            'lg': 'device-lg d-none d-lg-block d-xl-none',
             'xl': 'device-xl d-none d-xl-block'
         };
         const desktop = !(/android|iphone/i.test(navigator.userAgent) || (/ipad/i.test(navigator.userAgent) && window.innerWidth < 768));
@@ -93,24 +93,25 @@ export default {
     methods: {
         setDeviceSize() {
             let deviceSize = 'xs',
+                classObject = Object.assign({}, this.classObject),
                 el;
 
             //console.log("-> App::setDeviceSize");
 
             for (const size in this.DEVICE_SIZES) {
+                classObject['device-' + size] = false;
                 el = document.querySelector('.device-detector.device-' + size);
                 if (el) {
                     //console.log("   App::setDeviceSize: size [" + size + "] display [" + getComputedStyle(el).getPropertyValue("display") + "]");
                     if (getComputedStyle(el).getPropertyValue("display") === 'block') {
                         deviceSize = size;
                     }
-                    this.classObject['device-' + deviceSize] = false;
                 }
             }
 
             //console.log("   App::setDeviceSize: " + this.$store.getters.deviceSize + " !== " + deviceSize);
+            classObject['device-' + deviceSize] = true;
             if (this.$store.getters.deviceSize !== deviceSize) {
-                this.classObject['device-' + deviceSize] = true;
                 this.$store.dispatch('setDeviceSize', {
                     deviceSize: deviceSize
                 });
@@ -125,6 +126,8 @@ export default {
                     mobileHeight
                 });
             }
+
+            this.classObject = Object.assign({}, classObject);
 
             //console.log("<- App::setDeviceSize");
         }

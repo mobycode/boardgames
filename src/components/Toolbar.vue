@@ -5,16 +5,16 @@
             <div class="row">
                 <div class="col toolbar">
                     <div style="display: inline-block; vertical-align: middle;">
-                        <button type="button" class="settings-menu btn">
-                            <div :class="{ dropup: settingsExpanded, dropdown: !settingsExpanded }" @click="expandCollapseSettings" :title="settingsExpanded ? 'Hide settings' : 'Show settings'">
+                        <button type="button" class="settings-menu btn" @click="expandCollapseSettings">
+                            <div :class="{ dropup: settingsExpanded, dropdown: !settingsExpanded }" :title="settingsExpanded ? 'Hide settings' : 'Show settings'">
                                 <i class="fas fa-cogs" :class="{'fa-lg': !smallIcons}"></i>
                                 <i class="fas" :class="{ 'fa-lg': !smallIcons, 'fa-caret-down': !settingsExpanded, 'fa-caret-up': settingsExpanded}"></i>
                             </div>
                         </button>
                     </div>
                     <div class="reset-filter" :class="{'reset-filter-disabled': !filtered}" style="display: inline-block; vertical-align: middle;" title="Reset filters">
-                        <button type="button" class="btn" :disabled="!filtered">
-                            <span class="fas fa-stack" :class="{'fa-lg': !smallIcons}" @click="resetSettings">
+                        <button type="button" class="btn" :disabled="!filtered" @click="resetSettings">
+                            <span class="fas fa-stack" :class="{'fa-lg': !smallIcons}">
                                 <i class="fas fa-filter fa-filter-clear fa-stack-1x"></i>
                                 <i class="fas fa-ban fa-stack-1x"></i>
                             </span>

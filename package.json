@@ -13,14 +13,15 @@
   },
   "dependencies": {
     "cpx": "^1.5.0",
+    "ejs": "^2.5.7",
     "fix-outline": "^0.1.1",
-    "moment": "^2.20.0",
+    "moment": "^2.20.1",
     "node-sass": "^4.7.2",
     "sass-loader": "^6.0.6",
     "simplebar": "^2.5.1",
-    "vue": "^2.4.4",
+    "vue": "^2.5.13",
     "vue-masonry": "^0.10.16",
-    "vue-resource": "^1.3.4",
+    "vue-resource": "^1.3.5",
     "vue-router": "^3.0.1",
     "vuelidate": "^0.6.1",
     "vuex": "^3.0.1"
@@ -30,13 +31,13 @@
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.0",
     "babel-preset-stage-2": "^6.24.1",
-    "cross-env": "^5.0.5",
-    "css-loader": "^0.28.7",
-    "file-loader": "^1.1.4",
-    "sass-resources-loader": "^1.3.1",
-    "vue-loader": "^13.0.5",
-    "vue-template-compiler": "^2.4.4",
-    "webpack": "^3.6.0",
-    "webpack-dev-server": "^2.9.1"
+    "cross-env": "^5.1.3",
+    "css-loader": "^0.28.9",
+    "file-loader": "^1.1.6",
+    "sass-resources-loader": "^1.3.2",
+    "vue-loader": "^13.7.1",
+    "vue-template-compiler": "^2.5.13",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.11.1"
   }
 }

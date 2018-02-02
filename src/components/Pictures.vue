@@ -47,7 +47,7 @@ import {
 export default {
     data() {
         return {
-            loaded: 12
+            loaded: 30
         };
     },
     computed: {
@@ -212,25 +212,57 @@ export default {
         position: relative
         .rank a,
         .name a
-            width: 500px
             color: white
             position: absolute
             transform: translateX(-50%)
             color: white
+            text-decoration: none
             text-align: center
             //text-shadow: 2px 2px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,0px 2px 0 #000,2px 0px 0 #000,0px -2px 0 #000,-2px 0px 0 #000,2px 2px 5px #000
             text-shadow: 1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,0px 1px 0 #000,1px 0px 0 #000,0px -1px 0 #000,-1px 0px 0 #000,1px 1px 5px #000
         .rank a
-            top: 12px
+            top: 4px
             left: 50%
         .name a
-            bottom: 12px
+            bottom: 4px
             left: 50%
 
         .pic-picture,
         .pic-thumbnail
-            width: 500px
+            //width: 500px
+        .pic-picture img
+            width: 100%
+
         .pic-thumbnail img
-                transform-origin: left
-                transform: translateX(250px) translateX(-50%)
+            //transform-origin: left
+            //transform: translateX(250px) translateX(-50%)
+
+.device-xl .pic-parent .pic
+    .name a,
+    .pic-picture,
+    .pic-thumbnail
+        width: 360px
+.device-lg .pic-parent .pic
+    .name a,
+    .pic-picture,
+    .pic-thumbnail
+        width: 320px
+.device-md .pic-parent .pic
+    .name a,
+    .pic-picture,
+    .pic-thumbnail
+        width: 240px
+.device-sm .pic-parent .pic
+    .pic-picture,
+    .pic-thumbnail
+        width: 230px
+.pic-parent .pic
+    .rank a,
+    .name a
+        font-size: 10px
+    .name a,
+    .pic-picture,
+    .pic-thumbnail
+        width: 190px
+
 </style>
