@@ -1,22 +1,26 @@
 <template>
 <div class="row" :data-filtered="filtered">
     <div class="col">
-        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2}">
-            <span class="input-group-addon">
-                 <input type="checkbox" v-model="enabled" id="rankFilterCheckbox" aria-label="Enable rank filter" @change="focusInput">
-                 <label class="d-sm-none form-check-label pl-1" for="rankFilterCheckbox">Rank</label>
-            </span>
-            <span class="input-group-addon label d-none d-sm-flex">Rank</span>
-            <div class="input-group-btn" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }">
-                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-ranks" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ actionText }}</button>
-                <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
-                    <a v-for="(action, index) in actions" class="dropdown-item" href="javascript:void(0);" @click="setAction(index, $event)">{{ action.text }}</a>
+        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2, 'input-group-xs': deviceSizeValue < 0}">
+            <div class="input-group-prepend" :class="{'only-visible-child': actionIndex === 3}">
+                <div class="input-group-text">
+                    <input type="checkbox" v-model="enabled" id="rankFilterCheckbox" aria-label="Enable rank filter" @change="focusInput">
+                    <label class="d-sm-none form-check-label pl-1" for="rankFilterCheckbox">Rank</label>
                 </div>
+                <div class="input-group-text label d-none d-sm-flex">Rank</div>
+                <span>
+                    <button type="button" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-ranks" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ actionText }}</button>
+                    <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
+                        <a v-for="(action, index) in actions" class="dropdown-item" href="javascript:void(0);" @click="setAction(index, $event)">{{ action.text }}</a>
+                    </div>
+                </span>
             </div>
-            <input placeholder="Rank" v-show="valueCount === 1" v-model.number="value" type="number" class="form-control" :class="{'is-invalid': $v.value.$error}" @input="$v.value.$touch(); autoEnable($event);" :disabled="valueCount !== 1">
-            <input placeholder="Min" v-show="valueCount === 2" v-model.number="minValue" type="number" class="form-control" :class="{'is-invalid': $v.minValue.$error}" @input="$v.minValue.$touch(); autoEnable($event);" :disabled="valueCount !== 2">
-            <span class="input-group-addon" v-show="valueCount === 2">{{ deviceSizeValue < 2 ? '&' : 'and' }}</span>
-            <input placeholder="Max" v-show="valueCount === 2" v-model.number="maxValue" type="number" class="form-control" :class="{'is-invalid': $v.maxValue.$error}" @input="$v.maxValue.$touch(); autoEnable($event);" :disabled="valueCount !== 2">
+            <input placeholder="Rank" v-if="valueCount === 1" v-model.number="value" type="number" class="form-control" :class="{'is-invalid': $v.value.$error}" @input="$v.value.$touch(); autoEnable($event);" :disabled="valueCount !== 1">
+            <input placeholder="Min" v-if="valueCount === 2" v-model.number="minValue" type="number" class="form-control" :class="{'is-invalid': $v.minValue.$error}" @input="$v.minValue.$touch(); autoEnable($event);" :disabled="valueCount !== 2">
+            <div class="input-group-append input-group-insert" v-if="valueCount === 2">
+                <div class="input-group-text">{{ andText }}</div>
+            </div>
+            <input placeholder="Max" v-if="valueCount === 2" v-model.number="maxValue" type="number" class="form-control" :class="{'is-invalid': $v.maxValue.$error}" @input="$v.maxValue.$touch(); autoEnable($event);" :disabled="valueCount !== 2">
         </div>
     </div>
 </div>
@@ -56,6 +60,15 @@ export default {
             actionIndex: 1,
             actions,
             valueProperty: 'rank'
+        }
+    },
+    methods: {
+        reset() {
+            this.enabled = false;
+            this.value = undefined;
+            this.minValue = undefined;
+            this.maxValue = undefined;
+            this.actionIndex = 1;
         }
     }
 }

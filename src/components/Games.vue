@@ -46,7 +46,7 @@ $verticalMargin: 15px
 // iPhone X
 @media only screen and (max-width : 450px)
     .page-col
-        padding: 0px
+        //padding: 0px
 
 .desktop .flex-page-container
     height: calc(100vh - #{$verticalMargin * 2})
@@ -80,4 +80,9 @@ $verticalMargin: 15px
         justify-content: flex-start /* align items in Main Axis */
         align-items: stretch /* align items in Cross Axis */
         align-content: stretch /* Extra space in Cross Axis */
+
+.flex-page-item > .container-fluid > .row > .col,
+.flex-page-item-grow > .container-fluid > .row > .col,
+    padding-right: 0px
+    padding-left: 0px
 </style>

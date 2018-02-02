@@ -43,8 +43,24 @@ export default {
     data() {
         return {};
     },
-    computed: {},
-    methods: {}
+    computed: {
+        deviceSizeValue() {
+            return this.$store.getters.deviceSizeValue;
+        },
+    },
+    methods: {
+        reset() {
+            this.$children.forEach(child => {
+                child.reset();
+            });
+            this.$store.dispatch('updateFilters', {
+                filters: this.$children
+            });
+            this.$router.push({
+                query: {}
+            });
+        }
+    }
 }
 </script>
 
@@ -53,63 +69,57 @@ export default {
 //    margin-top: 10px
 
 .settings
-    .multi-row.input-group-sm
-        .input-group-addon
-            border-right: 1px solid #ced4da
-            border-bottom: 0
-            border-radius: 0
-        .input-group-addon:first-child
-            border-top-left-radius: .2rem
-            border-top-right-radius: .2rem
-        .input-group-addon:last-child
-            border-bottom-left-radius: .2rem
-            border-bottom-right-radius: .2rem
-            border-bottom: 1px solid #ced4da
-        .input-group-addon.only-visible-child
-            border-top-left-radius: .2rem
-            border-top-right-radius: .2rem
-            border-bottom-left-radius: .2rem
-            border-bottom-right-radius: .2rem
-            border-bottom: 1px solid #ced4da
+    .input-group-append
+        margin-left: 0px
+    .input-group>.input-group-prepend>span,
+    .input-group>.input-group-append>span
+        display: inline-block
+        position: relative
+    .input-group>.input-group-prepend>:not(:first-child)>.btn,
+    .input-group>.input-group-append>:not(:last-child)>.btn
+        border-top-right-radius: 0
+        border-bottom-right-radius: 0
+        border-top-left-radius: 0
+        border-bottom-left-radius: 0
+    .input-group>.input-group-prepend:not(.input-group-insert) .btn
+        border-top-right-radius: 0
+        border-bottom-right-radius: 0
+    .input-group>.input-group-append:not(.input-group-insert) .btn
+        border-top-left-radius: 0
+        border-bottom-left-radius: 0
+    .input-group>.input-group-prepend.only-visible-child .btn
+        border-top-right-radius: .2rem
+        border-bottom-right-radius: .2rem
+    .input-group-sm>.input-group-prepend>span,
+    .input-group-sm>.input-group-append>span
+        .btn
+            padding: .25rem .5rem
+            font-size: .875rem
+            line-height: 1.5
+            border-radius: .2rem
+    .input-group>.input-group-prepend.only-visible-child>.input-group-text,
+    .input-group>.input-group-append.only-visible-child>.input-group-text
+        border-top-right-radius: .2rem
+        border-bottom-right-radius: .2rem
 
-        .form-control
-            border-top: 0
-            border-top-left-radius: 0
-            border-top-right-radius: 0
-        .input-group-btn
-            margin-left: 1px
-            margin-right: -1px
-            .btn
-                width: 100%
-                border-radius: 0
-        .input-group-btn:last-child
-            .btn
-                border-bottom-left-radius: .2rem
-                border-bottom-right-radius: .2rem
-
+    .input-group-sm.input-group-xs
+        .input-group-text
+            min-width: 90px
     .input-group-sm
-        .input-group-addon.label
+        .input-group-text.label
             min-width: 65px
-        .input-group-btn button,
-        .input-group-addon.info
-            min-width: 85px
-    .input-group-addon.label
+    .input-group-text.label
         min-width: 80px
         background-color: #fff
-    .input-group-btn button,
-    .input-group-addon.info
-        min-width: 110px
+    span button,
+        min-width: 90px
         text-align: left
-    .input-group.input-group-sm
-        .input-group-addon
-            label
-                text-align: left
-                min-width: 85px
-        .input-group-addon.only-visible-child
-            //border-top-left-radius: .2rem
-            border-top-right-radius: .2rem
-            border-bottom-right-radius: .2rem
-            border-right: 1px solid #ced4da
+
+.input-group-text.label
+    background-color: white
+.input-group-append.input-group-insert,
+.input-group-btn.input-group-insert button.btn
+    border-radius: 0
 
 .btn .caret
     margin-left: 0
@@ -128,4 +138,8 @@ export default {
     border-top: 4px solid\9
     border-right: 4px solid transparent
     border-left: 4px solid transparent
+.button-row
+    margin-top: 8px
+    .btn + .btn
+        margin-left: 8px
 </style>

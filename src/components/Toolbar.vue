@@ -1,32 +1,43 @@
 <template>
-<div class="container-fluid toolbar">
+<div class="container-fluid">
     <div class="row">
         <div class="col">
             <div class="row">
-                <div class="col">
+                <div class="col toolbar">
                     <div style="display: inline-block; vertical-align: middle;">
-                        <div class="settings" :class="{ dropup: settingsExpanded, dropdown: !settingsExpanded }" @click="expandCollapseSettings">
-                            <i class="fa fa-cogs" :class="{'fa-lg': !smallIcons}"></i>
-                            <i class="fa" :class="{ 'fa-lg': !smallIcons, 'fa-caret-down': !settingsExpanded, 'fa-caret-up': settingsExpanded}"></i>
-                        </div>
+                        <button type="button" class="settings-menu btn">
+                            <div :class="{ dropup: settingsExpanded, dropdown: !settingsExpanded }" @click="expandCollapseSettings" :title="settingsExpanded ? 'Hide settings' : 'Show settings'">
+                                <i class="fas fa-cogs" :class="{'fa-lg': !smallIcons}"></i>
+                                <i class="fas" :class="{ 'fa-lg': !smallIcons, 'fa-caret-down': !settingsExpanded, 'fa-caret-up': settingsExpanded}"></i>
+                            </div>
+                        </button>
                     </div>
-                    <div style="display: inline-block; vertical-align: middle;">
-                        <div class="desktop-site-toggle ml-3" @click="toggleDesktopSite" :title="desktopSite ? 'Request moble site' : 'Request desktop site'">
-                            <i class="fa" :class="{'fa-lg': !smallIcons, 'fa-mobile-alt': desktopSite, 'fa-desktop': !desktopSite}"></i>
-                        </div>
+                    <div class="reset-filter" :class="{'reset-filter-disabled': !filtered}" style="display: inline-block; vertical-align: middle;" title="Reset filters">
+                        <button type="button" class="btn" :disabled="!filtered">
+                            <span class="fas fa-stack" :class="{'fa-lg': !smallIcons}" @click="resetSettings">
+                                <i class="fas fa-filter fa-filter-clear fa-stack-1x"></i>
+                                <i class="fas fa-ban fa-stack-1x"></i>
+                            </span>
+                        </button>
                     </div>
                     <div class="btn-toolbar view-toggle" role="toolbar" aria-label="Toolbar with button groups">
                         <div class="btn-group mr-2" role="group" aria-label="First group">
-                            <button type="button" class="btn" :class="{'btn-outline-secondary': !tableToggled}" :disabled="tableToggled" @click="onTable"><i class="fa fa-table" :class="{'fa-lg': !smallIcons}"></i></button>
-                            <button type="button" class="btn" :class="{'btn-outline-secondary':  tableToggled}" :disabled="!tableToggled" @click="onTiles"><i class="fa fa-th" :class="{'fa-lg': !smallIcons}"></i></button>
+                            <button type="button" class="btn" :class="{'btn-outline-secondary': viewName !== 'table'}" :disabled="viewName === 'table'" @click="onTable" :title="viewName !== 'table' ? 'Switch to table view' : ''"><i class="fas fa-table" :class="{'fa-lg': !smallIcons}"></i></button>
+                            <button type="button" class="btn" :class="{'btn-outline-secondary': viewName !== 'tiles'}" :disabled="viewName === 'tiles'" @click="onTiles" :title="viewName !== 'tiles' ? 'Switch to tile view' : ''"><i class="fas fa-th" :class="{'fa-lg': !smallIcons}"></i></button>
+                            <button type="button" class="btn" :class="{'btn-outline-secondary': viewName !== 'image'}" :disabled="viewName === 'image'" @click="onImage" :title="viewName !== 'image' ? 'Switch to picture view' : ''"><i class="fas fa-images" :class="{'fa-lg': !smallIcons}"></i></button>
+                        </div>
+                    </div>
+                    <div style="display: inline-block; vertical-align: middle;">
+                        <div class="desktop-site-toggle" @click="toggleDesktopSite" :title="desktopSite ? 'Request moble site' : 'Request desktop site'">
+                            <i class="fa" :class="{'fa-lg': !smallIcons, 'fa-mobile-alt': desktopSite, 'fa-desktop': !desktopSite}"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-sm-5 col-md-4 col-lg-3 col-xl-3">
+                <div class="col-5 col-sm-5 col-md-4 col-lg-3 col-xl-3">
                     <div class="input-group" :class="{'input-group-sm': smallIcons}">
                         <input class="form-control" id="search" placeholder="Search names" v-model="searchString" @keyup="updateSearch" type="text">
-                        <div class="input-group-btn">
-                            <button class="btn btn-outline-secondary" :disabled="searchString === ''" type="button" @click="clearSearch"><i class="fa fa-times"></i></button>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" :disabled="searchString === ''" type="button" @click="clearSearch"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
                 </div>
@@ -35,10 +46,10 @@
                 <div class="settings" v-show="settingsExpanded">
                     <ul class="nav" v-if="deviceSizeValue > 0">
                         <li class="nav-item">
-                            <a class="nav-link" :class="{active: activeSettings === SETTINGS_FILTERS}" href="javascript:void(0)" @click="setActiveSettings(SETTINGS_FILTERS)">Filters</a>
+                            <a class="nav-link" :class="{active: activeSettings === SETTINGS_FILTERS}" href="javascript:void(0)" @click="setActiveSettings(SETTINGS_FILTERS)" :title="activeSettings !== SETTINGS_FILTERS ? 'Show filter settings' : ''">Filters</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" :class="{active: activeSettings === SETTINGS_PLAYS}" href="javascript:void(0)" @click="setActiveSettings(SETTINGS_PLAYS)">Plays</a>
+                            <a class="nav-link" :class="{active: activeSettings === SETTINGS_PLAYS}" href="javascript:void(0)" @click="setActiveSettings(SETTINGS_PLAYS)" :title="activeSettings !== SETTINGS_PLAYS ? 'Show plays logged settings' : ''">Plays</a>
                         </li>
                     </ul>
                     <div>
@@ -87,8 +98,16 @@ export default {
         smallIcons() {
             return this.deviceSizeValue < 2;
         },
-        tableToggled() {
-            return !(this.$route && this.$route.name === 'tiles');
+        viewName() {
+            return this.$route.name;
+        },
+        filtered() {
+            let entries = Object.entries(this.$route.query);
+            let filtered = entries.filter((entry) => {
+                return entry[1] !== undefined;
+            });
+            console.warn(`entries [${entries.length}] -> filtered [${filtered.length}]`);
+            return filtered.length !== 0;
         }
     },
     methods: {
@@ -107,6 +126,11 @@ export default {
         onTiles() {
             this.$router.push({
                 name: 'tiles'
+            });
+        },
+        onImage() {
+            this.$router.push({
+                name: 'image'
             });
         },
         toggleDesktopSite() {
@@ -147,6 +171,11 @@ export default {
                 this.searchString = '';
                 this.updateSearch();
             }
+        },
+        resetSettings() {
+            this.$children.forEach((child) => {
+                child.reset();
+            });
         }
     },
     updated() {
@@ -174,9 +203,19 @@ export default {
     padding-bottom: 8px
     overflow: visible
 
-    .settings.dropup
+    .settings-menu .dropup
         color: #0056b3
 
+    .btn
+        box-shadow: none !important
+        background: none
+        border: 0px
+        padding-right: 8px
+        padding-left: 8px
+    .settings-menu.btn
+        padding-left: 0px
+    .reset-filter.reset-filter-disabled>span>i
+        color: #333
     .view-toggle
         display: inline
         .btn + .btn
@@ -195,9 +234,6 @@ export default {
         .btn.btn-outline-secondary
             color: #000
             border: 0
-    .nav-link.active
-        color: #333
-        font-weight: bold
 
     *[role=search]
         .btn-outline-secondary,
@@ -210,9 +246,12 @@ export default {
                 i
                     opacity:.65
 
-    .settings
-        margin-top: 8px
-        margin-bottom: 8px
+.nav-link.active
+    color: #333
+    font-weight: bold
+
+.settings
+    margin-bottom: 8px
 
 // TODO: fixme
 .toolbar
@@ -238,4 +277,15 @@ body.kb-nav-used .view-toggle .btn:focus i
         opacity: 1
     to
         opacity: 0
+
+.fas.fa-stack
+    width: 1rem
+    height: 1rem
+    line-height: 1rem
+    font-size: 1rem
+.fas.fa-filter-clear
+   color: transparent
+   -webkit-text-stroke-width: 2px
+   -webkit-text-stroke-color: #333
+
 </style>

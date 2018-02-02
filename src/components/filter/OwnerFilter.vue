@@ -1,34 +1,39 @@
 <template>
 <div class="row" :data-filtered="filtered">
     <div class="col">
-        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2}">
-            <span class="input-group-addon">
-                 <input type="checkbox" v-model="enabled" id="ownersFilterCheckbox" aria-label="Enable owner filter">
-                 <label class="d-sm-none form-check-label pl-1" for="ownersFilterCheckbox">Owners</label>
-            </span>
-            <span class="input-group-addon label d-none d-sm-flex">Owners</span>
-            <div class="input-group-btn" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }">
-                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-owners" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ ownerText }}</button>
-                <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
-                    <div class="form-check dropdown-item">
-                        <label class="form-check-label">
-                            <input class="form-check-input" type="radio" v-model="owned" v-bind:value="true" @click="setOwned">Owned
-                        </label>
-                    </div>
-                    <div class="form-check dropdown-item" v-for="owner of allOwners">
-                        <label class="form-check-label" style="margin-left: 25px;">
-                            <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!owned">{{ owner }}
-                        </label>
-                    </div>
-                    <div class="form-check dropdown-item">
-                        <label class="form-check-label">
-                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="false" @click="setOwned">Unowned
-                            </label>
-                    </div>
+        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2, 'input-group-xs': deviceSizeValue < 0}">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <input type="checkbox" v-model="enabled" id="ownersFilterCheckbox" aria-label="Enable owner filter">
+                    <label class="d-sm-none form-check-label pl-1" for="ownersFilterCheckbox">Owners</label>
                 </div>
+                <div class="input-group-text label d-none d-sm-flex">Owners</div>
+            </div>
+            <div class="input-group-append">
+                <span>
+                    <button type="button" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }" class="btn btn-secondary dropdown-toggle form-control-sm" data-toggle="dropdown-owners" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ ownerText }}</button>
+                    <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
+                        <div class="form-check dropdown-item">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="true" @click="setOwned">Owned
+                            </label>
+                        </div>
+                        <div class="form-check dropdown-item" v-for="owner of allOwners">
+                            <label class="form-check-label" style="margin-left: 25px;">
+                                <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!owned">{{ owner }}
+                            </label>
+                        </div>
+                        <div class="form-check dropdown-item">
+                            <label class="form-check-label">
+                                    <input class="form-check-input" type="radio" v-model="owned" v-bind:value="false" @click="setOwned">Unowned
+                                </label>
+                        </div>
+                    </div>
+                </span>
             </div>
         </div>
     </div>
+</div>
 </div>
 </template>
 
@@ -163,6 +168,11 @@ export default {
                     console.log(`<> OwnerFilter::fromQuery: ${this.owned} ${this.owners}`);
                 }
             }
+        },
+        reset() {
+            this.enabled = true;
+            this.owned = true;
+            this.owners = this.allOwners.slice();
         }
     }
 }

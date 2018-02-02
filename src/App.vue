@@ -9,7 +9,13 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import moment from 'moment'
+import {
+    VueMasonryPlugin
+} from 'vue-masonry';
+
+Vue.use(VueMasonryPlugin)
 
 const DEVICE_SIZES = ['sm', 'md', 'lg', 'xl'];
 
@@ -59,13 +65,13 @@ export default {
             name: 'loading'
         });
         this.$store.dispatch('loadStore').then((data) => {
-            if (name) {
+            if (name && !(name === 'loading' || name === 'load-error')) {
                 this.$router.push({
                     name: name
                 });
             } else {
                 this.$router.push({
-                    name: 'data'
+                    name: 'table'
                 });
             }
         }, (error) => {
@@ -156,12 +162,13 @@ body
     position: fixed
     z-index: 999
     background-color: #fff
+    text-align: right
 .debug-info.mobile-height
     top: 150px
-    left: 0px
+    right: 0px
 .debug-info.device-size
     top: 200px
-    left: 0px
+    right: 0px
 .dev .debug-info
     display: block
 </style>

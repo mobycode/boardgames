@@ -65,10 +65,13 @@ export default {
         fromQuery() {
             console.log(`${this.id} must implement fromQuery`);
         },
+        reset() {
+            console.log(`${this.id} must implement reset`);
+        },
         filterChanged() {
             this.toQuery();
-            this.$store.dispatch('updateFilter', {
-                filter: this
+            this.$store.dispatch('updateFilters', {
+                filters: [this]
             });
         },
         toggleDropdown(id) {

@@ -1,17 +1,19 @@
 <template>
 <div class="row" :data-filtered="filtered">
     <div class="col">
-        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2}">
-            <span class="input-group-addon">
-                 <input type="checkbox" v-model="enabled" id="nameFilterCheckbox" aria-label="Enable name filter" @change="focusInput">
-                 <label class="d-sm-none form-check-label pl-1" for="nameFilterCheckbox">Name</label>
-            </span>
-            <span class="input-group-addon label d-none d-sm-flex">Name</span>
-            <div class="input-group-btn" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }">
-                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-name" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ actionText }}</button>
-                <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
-                    <a v-for="(action, index) in actions" class="dropdown-item" href="javascript:void(0);" @click="setAction(index, $event)">{{ action.text }}</a>
+        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2, 'input-group-xs': deviceSizeValue < 0}">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <input type="checkbox" v-model="enabled" id="nameFilterCheckbox" aria-label="Enable name filter" @change="focusInput">
+                    <label class="d-sm-none form-check-label pl-1" for="nameFilterCheckbox">Name</label>
                 </div>
+                <div class="input-group-text label d-none d-sm-flex">Name</div>
+                <span>
+                    <button type="button":id="dropdowns[0].id" :class="{ show: dropdowns[0].open }" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-name" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ actionText }}</button>
+                    <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
+                        <a v-for="(action, index) in actions" class="dropdown-item" href="javascript:void(0);" @click="setAction(index, $event)">{{ action.text }}</a>
+                    </div>
+                </span>
             </div>
             <input id="value" placeholder="Name" v-model="value" @keyup="autoEnable" type="text" class="form-control">
         </div>
@@ -138,6 +140,11 @@ export default {
 
                 console.log(`<> NameFilter::fromQuery: ${this.actionIndex} ${this.value}`);
             }
+        },
+        reset() {
+            this.enabled = false;
+            this.value = '';
+            this.actionIndex = 0;
         }
     }
 }

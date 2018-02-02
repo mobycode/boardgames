@@ -82,6 +82,9 @@ export default {
             this._oldFilteredString = str;
             console.log(`<> NumberFilter::filteredString: ${this.id} - ${this.invalid} ${str}`);
             return str;
+        },
+        andText() {
+            return this.deviceSizeValue < 2 ? '&' : 'and';
         }
     },
     validations: {
@@ -224,6 +227,13 @@ export default {
             }
 
             //console.log(`<- NumberFilter::fromQuery: ${this.id}`);
+        },
+        reset() {
+            this.enabled = false;
+            this.value = undefined;
+            this.minValue = undefined;
+            this.maxValue = undefined;
+            this.actionIndex = 0;
         }
     }
 }

@@ -1,12 +1,14 @@
 <template>
 <div class="row">
     <div class="col">
-        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2}">
-            <span class="input-group-addon only-visible-child">
-                 <input type="checkbox" v-model="enabled" id="expansionFilterCheckbox" aria-label="Enable expansion filter">
-                 <label class="d-sm-none form-check-label pl-1" for="expansionFilterCheckbox">Hide expansions</label>
-            </span>
-            <span class="input-group-addon label d-none d-sm-flex">Hide expansions</span>
+        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2, 'input-group-xs': deviceSizeValue < 0}">
+            <div class="input-group-prepend only-visible-child">
+                <div class="input-group-text">
+                    <input type="checkbox" v-model="enabled" id="expansionFilterCheckbox" aria-label="Enable expansion filter">
+                    <label class="d-sm-none form-check-label pl-1" for="expansionFilterCheckbox">Hide expansions</label>
+                </div>
+                <div class="input-group-text label d-none d-sm-flex">Hide expansions</div>
+            </div>
         </div>
     </div>
 </div>
@@ -48,6 +50,9 @@ export default {
                 this.enabled = (query.exp !== "true");
                 console.log(`<> ExpansionFilter::fromQuery: ${this.enabled}`);
             }
+        },
+        reset() {
+            this.enabled = true;
         }
     },
     watch: {

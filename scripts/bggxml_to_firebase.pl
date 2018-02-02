@@ -65,6 +65,8 @@ use constant USERS_TO_OWNERS => {
 #  use constant ITEM_KEY_PREVOWNERS => "po";
 #  use constant ITEM_KEY_IMAGE => "img";
 #  use constant ITEM_KEY_THUMBNAIL => "th";
+#  use constant ITEM_KEY_PICTURE => "pic";
+#  use constant ITEM_KEY_PICTURE_EXT => "pice";
 #  use constant ITEM_KEY_YEARPBLISHED => "y";
 #  use constant ITEM_KEY_WEIGHT => "w";
 #  use constant ITEM_KEY_RATING => "rtg";
@@ -86,6 +88,8 @@ use constant USERS_TO_OWNERS => {
   use constant ITEM_KEY_PREVOWNERS => "pevowners";
   use constant ITEM_KEY_IMAGE => "image";
   use constant ITEM_KEY_THUMBNAIL => "thumbnail";
+  use constant ITEM_KEY_PICTURE => "picture";
+  use constant ITEM_KEY_PICTURE_EXT => "pictureext";
   use constant ITEM_KEY_YEARPBLISHED => "yearpublished";
   use constant ITEM_KEY_WEIGHT => "weight";
   use constant ITEM_KEY_RATING => "rating";
@@ -436,8 +440,11 @@ sub json_hash_to_file {
 
 
 sub json_hash_from_file {
-    my ($name) = @_;
-    my $file = "$dir/data/$name.json";
+    my ($name, $subdir) = @_;
+    if (not(defined($subdir))) {
+        $subdir = "/data";
+    }
+    my $file = "$dir/$subdir/$name.json";
     my ($json, $hash_ref);
 
     open IN_FH, "<$file" or die "$file ".$!;
@@ -810,6 +817,38 @@ sub process_expansions {
 };# end process_expansions
 
 
+sub process_pictures {
+    my ($pictures_hash_ref, $picture_hash_ref, $item_hash_ref, @allobjectids, $objectid, $objectid_count, $updates, $i);
+
+    _enter("process_pictures(".keys(%$items_hash_ref).")");
+
+    $pictures_hash_ref = json_hash_from_file("pictures", "");
+
+    @allobjectids = keys(%$pictures_hash_ref);
+    $updates = 0;
+    $objectid_count = scalar(@allobjectids);
+    #_debug("process_pictures: \$objectid_count = $objectid_count");
+
+    for ($i=0; $i < $objectid_count; $i++) {
+        $objectid = $allobjectids[$i];
+
+        if (not(exists($items_hash_ref->{$objectid}))) {
+            next;
+        }
+        $item_hash_ref = $items_hash_ref->{$objectid};
+        $picture_hash_ref = $pictures_hash_ref->{$objectid};
+
+        $item_hash_ref->{&ITEM_KEY_PICTURE} = $picture_hash_ref->{"id"};
+        if (exists($picture_hash_ref->{"ext"})) {
+            $item_hash_ref->{&ITEM_KEY_PICTURE_EXT} = $picture_hash_ref->{"ext"};
+        }
+        $updates++;
+        #_debug("process_pictures: added picture ".$pictures_hash_ref->{$objectid}." for $objectid");
+    }
+    _exit("process_pictures: $updates updates");
+};# end process_pictures
+
+
 sub process_prevowned {
     my ($prevowned_items_ref, $owner) = @_;
     _enter("process_prevowned(".keys(%$items_hash_ref).",".@$prevowned_items_ref.",$owner)");
@@ -869,6 +908,8 @@ sub bggxml_to_items {
     process_things(get_bgg_things_json([keys(%$comp_ids_hash_ref)], "compilations"), TRUE);
 
     process_expansions();
+
+    process_pictures();
 
     json_hash_to_file($items_hash_ref, "items");
 

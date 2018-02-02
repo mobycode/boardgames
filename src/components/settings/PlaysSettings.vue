@@ -1,13 +1,17 @@
 <template>
 <div class="row">
     <div class="col">
-        <div :class="[ deviceSizeValue < 0 ? 'input-group-sm' : 'input-group']">
-            <span class="input-group-addon label">Plays logged by</span>
-            <div class="input-group-btn" id="playsDropdownButtonGroup" :class="{ show: dropdownOpen }">
-                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-plays" aria-haspopup="true" :aria-expanded="dropdownOpen" @click="toggleDropdown">{{ selectedOwner }}</button>
-                <div class="dropdown-menu" :class="{ show: dropdownOpen }">
-                    <a v-for="owner in allOwners " class="dropdown-item " href="javascript:void(0);" @click="setSelectedOwner(owner) ">{{ owner }}</a>
-                </div>
+        <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2, 'input-group-xs': deviceSizeValue < 0}">
+            <div class="input-group-prepend only-visible-child">
+                <div class="input-group-text">Plays logged by</div>
+            </div>
+            <div class="input-group-append">
+                <span>
+                    <button type="button" id="playsDropdownButtonGroup" :class="{ show: dropdownOpen }" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-plays" aria-haspopup="true" :aria-expanded="dropdownOpen" @click="toggleDropdown">{{ selectedOwner }}</button>
+                    <div class="dropdown-menu" :class="{ show: dropdownOpen }">
+                        <a v-for="owner in allOwners " class="dropdown-item " href="javascript:void(0);" @click="setSelectedOwner(owner) ">{{ owner }}</a>
+                    </div>
+                </span>
             </div>
         </div>
     </div>
@@ -45,6 +49,9 @@ export default {
                     owner: owner
                 });
             }
+        },
+        reset() {
+            this.$store.dispatch('resetSelectedOwner');
         }
     },
     created() {

@@ -19,6 +19,7 @@
     "sass-loader": "^6.0.6",
     "simplebar": "^2.5.1",
     "vue": "^2.4.4",
+    "vue-masonry": "^0.10.16",
     "vue-resource": "^1.3.4",
     "vue-router": "^3.0.1",
     "vuelidate": "^0.6.1",

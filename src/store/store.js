@@ -152,7 +152,6 @@ const state = {
     items: [],
     time: -1,
     selectedOwner: OWNER_JUSTIN,
-    filters: {},
     searchString: '',
     filters: {},
     filteredItems: [],
@@ -222,12 +221,13 @@ const mutations = {
     'SET_SORT' (state, sort) {
         console.log('-> store::SET_SORT');
 
-        let id, properties, types;
+        let id, properties, types, ascending;
 
         if (typeof sort === 'string') {
             id = sort,
             properties = [sort];
             types = ['number'];
+            ascending = id === state.sort.id ? (!state.sort.ascending) : true;
         } else {
             id = sort.id;
             properties = Array.isArray(sort.properties) ? sort.properties : sort.property ? [sort.property] : [sort.id];
@@ -239,6 +239,7 @@ const mutations = {
                     types.push('number');
                 }
             }
+            ascending = typeof sort.ascending === 'boolean' ? sort.ascending : (id === state.sort.id ? (!state.sort.ascending) : true);
         }
 
         if (!properties.includes('rank')) {
@@ -250,22 +251,32 @@ const mutations = {
             id,
             properties,
             types,
-            ascending: id === state.sort.id ? (!state.sort.ascending) : true
+            ascending
         };
         sortItems(state);
         console.log('<- store::SET_SORT');
     },
-    'UPDATE_FILTER' (state, filter) {
-        console.log('-> store::UPDATE_FILTER');
-        state.filters[filter.id] = filter;
+    'UPDATE_FILTERS' (state, filters) {
+        console.log('-> store::UPDATE_FILTERS');
+        filters.forEach((filter) => {
+            state.filters[filter.id] = filter;
+        });
         filterItems(state);
-        console.log('<- store::UPDATE_FILTER');
+        console.log('<- store::UPDATE_FILTERS');
     },
     'UPDATE_SEARCH' (state, searchString) {
         console.log('-> store::UPDATE_SEARCH');
         state.searchString = searchString;
         filterItems(state);
         console.log('<- store::UPDATE_SEARCH');
+    },
+    'RESET_SELECTED_OWNER' (state) {
+        console.log('-> store::RESET_SELECTED_OWNER');
+        state.selectedOwner = OWNER_JUSTIN;
+        if (state.sort && state.sort.properties[0] === 'numplays') {
+            sortItems(state);
+        }
+        console.log('<- store::RESET_SELECTED_OWNER');
     },
     'SELECT_OWNER' (state, owner) {
         console.log('-> store::SELECT_OWNER('+owner+')');
@@ -293,9 +304,9 @@ const actions = {
         commit('SET_MOBILE_HEIGHT', update.mobileHeight);
         console.log('<- store::setMobileHeight');
     },
-    updateFilter({commit}, update) {
+    updateFilters({commit}, update) {
         console.log('-> store::updateFilter');
-        commit('UPDATE_FILTER', update.filter);
+        commit('UPDATE_FILTERS', update.filters);
         console.log('<- store::updateFilter');
     },
     updateSearch({commit}, update) {
@@ -312,6 +323,11 @@ const actions = {
         console.log('-> store::setSelectedOwner');
         commit('SELECT_OWNER', update.owner);
         console.log('<- store::setSelectedOwner');
+    },
+    resetSelectedOwner({commit}, update) {
+        console.log('-> store::resetSelectedOwner');
+        commit('RESET_SELECTED_OWNER');
+        console.log('<- store::resetSelectedOwner');
     },
     loadStore({commit}) {
         return new Promise((resolve, reject) => {
