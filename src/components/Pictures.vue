@@ -17,13 +17,13 @@
                         <div v-masonry-tile v-for="(item, idx) in displayedItems" class="pic-parent">
                             <div class="pic">
                                 <div class="rank">
-                                    <a :href="item | formatHref" :title="item.name" target="_blank">{{item.rank | formatRank}}</a>
+                                    <a :href="item | filterItemHref" :title="item.name" target="_blank">{{item | filterItemRank}}</a>
                                 </div>
-                                <div :class="{'pic-picture': !!item.picture, 'pic-thumbnail': !item.picture}">
+                                <div :class="[!!item.picture ? 'pic-picture' : 'pic-thumbnail']">
                                     <img :src="item | formatImgSrc"></img>
                                 </div>
                                 <div class="name">
-                                    <a :href="item | formatHref" :title="item.name" target="_blank">{{item.name}}</a>
+                                    <a :href="item | filterItemHref" :title="item.name" target="_blank">{{item.name}}</a>
                                 </div>
                             </div>
                         </div>
@@ -37,6 +37,7 @@
 
 <script>
 import SimpleBar from 'SimpleBar';
+import ItemFiltersMixin from './ItemFiltersMixin.vue';
 
 import {
     mapGetters,
@@ -45,6 +46,7 @@ import {
 
 
 export default {
+    mixins: [ItemFiltersMixin],
     data() {
         return {
             loaded: 30
@@ -80,25 +82,31 @@ export default {
     },
     methods: {
         onResize(evt) {
-            this.cardsPerRow = undefined;
-            this.onScrollEnd();
+            if (this.resizeHandle) {
+                clearTimeout(this.resizeHandle);
+            }
+            this.resizeHandle = setTimeout(() => {
+                this.cardsPerRow = undefined;
+                this.updateCards();
+            }, 200);
         },
         onScroll(evt) {
             if (this.scrollHandler) {
                 clearTimeout(this.scrollHandler);
             }
             this.scrollHandler = setTimeout(() => {
-                this.onScrollEnd();
+                this.updateCards();
             }, 100);
         },
-        onScrollEnd(evt) {
+        updateCards(evt) {
             let cards = this.$el.querySelectorAll('.pic-parent img'),
                 card, item, i, src, div, img;
 
             if (this.displayed >= this.filteredItems.length) {
                 return;
             }
-            /*
+
+            /* count cards per row so we can load x new rows of  cards
                         if (cards.length > 0 && (this.cardsPerRow === undefined || this.cardsPerRow === 1)) {
                             let x1 = cards[0].getBoundingClientRect().left,
                                 x2;
@@ -110,21 +118,28 @@ export default {
                                     this.cardsPerRow = i;
                                 }
                             }
-                            console.log(`<> Pictures::onScrollEnd: this.cardsPerRow [${this.cardsPerRow}]`);
+                            console.log(`<> Pictures::updateCards: this.cardsPerRow [${this.cardsPerRow}]`);
                         }
             */
+
+            /* if scrollbar is within x px of bottom, load new cards */
             if (this.scroller.scrollTop >= (this.scroller.scrollHeight - this.scroller.getBoundingClientRect().height - 500)) {
                 let pre = this.loaded;
-                //this.loaded = Math.min(this.filteredItems.length, this.loaded + (20 * this.cardsPerRow)); // TODO: FIX cardsPerRow
-                this.loaded = Math.min(this.filteredItems.length, this.loaded + 30);
-                console.log(`<> Pictures::onScrollEnd: loading updated from ${pre} -> ${this.loaded}`);
+                //this.loaded = Math.min(this.filteredItems.length, this.loaded + (20 * this.cardsPerRow)); // TODO: load x new rows of cards?
+                this.loaded = Math.min(this.filteredItems.length, this.loaded + 30); // just load 30 new cards
+                console.log(`<> Pictures::updateCards: loading updated from ${pre} -> ${this.loaded}`);
             }
-
-            this.$redrawVueMasonry()
-            this.simplebar.recalculate();
         },
     },
+    watch: {
+        displayedItems(value) {
+            // when # of displayed items changes, redraw masonry and update simplebar
+            this.$redrawVueMasonry()
+            this.simplebar.recalculate();
+        }
+    },
     beforeMount() {
+        // always sort by rank for this view
         this.$store.dispatch('setSort', {
             sort: {
                 id: 'rank',
@@ -135,60 +150,19 @@ export default {
         });
     },
     mounted() {
-        console.log(`<> Pictures::mounted`);
+        // create simple bar and add scroll/resize events
         this.simplebar = new SimpleBar(this.$el);
         this.scroller = this.$el.querySelector('.simplebar-scroll-content');
         this.scroller.addEventListener('scroll', this.onScroll);
 
         window.addEventListener('resize', this.onResize);
-        this.onScrollEnd();
     },
     beforeDestroy() {
-        console.log(`<> Pictures::beforeDestroy`);
+        // remove event listeners
+        this.scroller.removeEventListener('scroll', this.onScroll);
         window.removeEventListener('resize', this.onResize);
     },
     filters: {
-        formatRank(rank) {
-            return rank === -1 ? '' : rank;
-        },
-        formatHref: function(item) {
-            return 'https://boardgamegeek.com/boardgame/' + item.objectid + '/';
-        },
-        formatWeight(weight) {
-            return weight.toFixed(2);
-        },
-        formatPlayers(item) {
-            return item.minplayers + "-" + item.maxplayers;
-        },
-        formatPlays(item) {
-            return item.numplays || "";
-        },
-        formatPlayTime(item, deviceSizeValue) {
-            let str = '',
-                t = item.maxplaytime > 0 ? item.maxplaytime : item.minplaytime,
-                h, m;
-
-            if (t > 0) {
-                h = Math.floor(t / 60);
-                m = t % 60;
-                str = '' + (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
-            } else {
-                console.log('formatPlayTime: ' + item.name + ' - ' + item.minplaytime + "-" + item.maxplaytime);
-            }
-            /*
-                        let str = "",
-                            min = item.minplaytime,
-                            max = item.maxplaytime;
-                        if (!(min === -1 && max === -1)) {
-                            if (item.minplaytime === item.maxplaytime) {
-                                str = item.maxplaytime;
-                            } else {
-                                str = item.minplaytime + (deviceSizeValue < 0 ? "-" : " - ") + item.maxplaytime;
-                            }
-                        }
-            */
-            return str;
-        },
         formatImgSrc(item) {
             let src;
             if (item.picture) {
@@ -208,6 +182,7 @@ export default {
     padding-bottom: 8px
 
 .pic-parent
+    height: auto
     .pic
         position: relative
         .rank a,
@@ -227,46 +202,30 @@ export default {
         .name a
             bottom: 4px
             left: 50%
+            width: 100%
+            height: auto
 
-        .pic-picture,
-        .pic-thumbnail
-            //width: 500px
         .pic-picture img
             width: 100%
+        .pic-thumbnail
+            text-align: center
 
-        .pic-thumbnail img
-            //transform-origin: left
-            //transform: translateX(250px) translateX(-50%)
+/* size pictures based on screen size */
+.device-xl .pic-parent
+    width: 33%
+.device-lg .pic-parent
+    width: 33%
+.device-md .pic-parent
+    width: 50%
+.device-sm .pic-parent
+    width: 50%
+.device-xs .pic-parent
+    width: 100%
 
-.device-xl .pic-parent .pic
-    .name a,
-    .pic-picture,
-    .pic-thumbnail
-        width: 360px
-.device-lg .pic-parent .pic
-    .name a,
-    .pic-picture,
-    .pic-thumbnail
-        width: 320px
-.device-md .pic-parent .pic
-    .name a,
-    .pic-picture,
-    .pic-thumbnail
-        width: 240px
-.device-sm .pic-parent .pic
+/* shrink font size for smaller screens */
+.device-sm .pic-parent,
+.device-xs .pic-parent
     .rank a,
     .name a
         font-size: 10px
-    .pic-picture,
-    .pic-thumbnail
-        width: 230px
-.device-xs .pic-parent .pic
-    .rank a,
-    .name a
-        font-size: 10px
-    .name a,
-    .pic-picture,
-    .pic-thumbnail
-        width: 190px
-
 </style>

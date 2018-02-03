@@ -10,13 +10,13 @@
                 </div>
                 <div v-else v-for="(item, idx) in filteredItems" class="col-6 col-sm-4 col-md-4 col-lg-2 text-center card-parent">
                     <div class="card">
-                        <div class="rank">{{item.rank}}</div>
-                        <div class="card-img-top"><img class="img-fluid" src=""></div>
+                        <div class="rank">{{item | filterItemRank}}</div>
+                        <div class="card-img-top"><img class="img-fluid" :src="''"></div>
                         <div class="card-body">
-                            <a :href="item | formatHref" :title="item.name" target="_blank">{{ item.name }}</a>
+                            <a :href="item | filterItemHref" :title="item.name" target="_blank">{{ item.name }}</a>
                         </div>
                         <div class="card-footer">
-                            <span class="players">{{ item | formatPlayers }}<i class="fa-users" :class="iconClassObject"></i></span>
+                            <span class="players">{{ item | filterItemPlayers }}<i class="fa-users" :class="iconClassObject"></i></span>
                             <span class="time">{{ item.maxplaytime > 0 ? item.maxplaytime : item.minplaytime }}<i class="fa-clock" :class="iconClassObject"></i></span>
                         </div>
                     </div>
@@ -29,6 +29,7 @@
 
 <script>
 import SimpleBar from 'SimpleBar';
+import ItemFiltersMixin from './ItemFiltersMixin.vue';
 
 import {
     mapGetters,
@@ -37,6 +38,7 @@ import {
 
 
 export default {
+    mixins: [ItemFiltersMixin],
     computed: {
         deviceSizeValue() {
             return this.$store.getters.deviceSizeValue;
@@ -61,18 +63,23 @@ export default {
     },
     methods: {
         onResize(evt) {
-            this.cardsPerRow = undefined;
-            this.onScrollEnd();
+            if (this.resizeHandle) {
+                clearTimeout(this.resizeHandle);
+            }
+            this.resizeHandle = setTimeout(() => {
+                this.cardsPerRow = undefined;
+                this.updateCards();
+            }, 200);
         },
         onScroll(evt) {
             if (this.scrollHandler) {
                 clearTimeout(this.scrollHandler);
             }
             this.scrollHandler = setTimeout(() => {
-                this.onScrollEnd();
+                this.updateCards();
             }, 100);
         },
-        onScrollEnd(evt) {
+        updateCards(evt) {
             let cards = this.$el.querySelectorAll('.card-parent'),
                 card, item, i;
             if (cards.length > 0 && (this.cardHeight === undefined || this.cardsPerRow === undefined)) {
@@ -91,7 +98,7 @@ export default {
                         }
                     }
                 }
-                console.log(`<> Tiles::onScrollEnd: this.cardHeight [${this.cardHeight}] this.cardsPerRow [${this.cardsPerRow}]`);
+                console.log(`<> Tiles::updateCards: this.cardHeight [${this.cardHeight}] this.cardsPerRow [${this.cardsPerRow}]`);
             }
 
             if (this.cardHeight === undefined || this.cardsPerRow === undefined) {
@@ -103,26 +110,34 @@ export default {
                 scrollerHeight = scrollerRect.height,
                 minBottom = (scrollerTop - scrollerHeight),
                 maxTop = (scrollerTop + (2 * scrollerHeight)),
-                cardRect, cardTop, img, done;
+                cardRect, cardTop, img, src, done;
 
-            //console.log(`<> Tiles::onScrollEnd: minBottom [${minBottom}] maxTop [${maxTop}]`);
+            //console.log(`<> Tiles::updateCards: minBottom [${minBottom}] maxTop [${maxTop}]`);
 
-            for (i = 0; i < cards.length && !done; i++) {
+            for (i = 0; i < cards.length && i < this.filteredItems.length && !done; i++) {
                 cardRect = cards[i].getBoundingClientRect();
+                img = cards[i].querySelector('img');
+                src = this.filteredItems[i].thumbnail;
                 if (cardRect.bottom > minBottom) {
                     //console.log(`  cardRect.top [${cardRect.top}] passes ${this.filteredItems[i].rank}`);
                     if (cardRect.top < maxTop) {
                         //console.log(`  setting thumbnail for ${this.filteredItems[i].rank}`);
-                        img = cards[i].querySelector('img');
-                        if (img.getAttribute('src') === '') {
-                            img.setAttribute('src', this.filteredItems[i].thumbnail);
-                        }
+                        img.setAttribute('src', src);
                     } else {
                         //console.log(`  cardRect.bottom [${cardRect.bottom}] failed check ${this.filteredItems[i].rank}`);
                         done = true;
                     }
+                } else {
+                    img.setAttribute('src', src);
                 }
             }
+        }
+    },
+    watch: {
+        filteredItems(value) {
+            // when # of displayed items changes, update image src attributes and update simplebar
+            this.updateCards();
+            this.simplebar.recalculate();
         }
     },
     beforeMount() {
@@ -137,59 +152,16 @@ export default {
     },
     mounted() {
         //console.log(`<> Tiles::mounted`);
-        new SimpleBar(this.$el);
+        this.simplebar = new SimpleBar(this.$el);
         this.scroller = this.$el.querySelector('.simplebar-scroll-content');
         this.scroller.addEventListener('scroll', this.onScroll);
 
         window.addEventListener('resize', this.onResize);
-        this.onScrollEnd();
+        this.updateCards();
     },
     beforeDestroy() {
         //console.log(`<> Tiles::beforeDestroy`);
         window.removeEventListener('resize', this.onResize);
-    },
-    filters: {
-        formatRank(rank) {
-            return rank === -1 ? '' : rank;
-        },
-        formatHref: function(item) {
-            return 'https://boardgamegeek.com/boardgame/' + item.objectid + '/';
-        },
-        formatWeight(weight) {
-            return weight.toFixed(2);
-        },
-        formatPlayers(item) {
-            return item.minplayers + "-" + item.maxplayers;
-        },
-        formatPlays(item) {
-            return item.numplays || "";
-        },
-        formatPlayTime(item, deviceSizeValue) {
-            let str = '',
-                t = item.maxplaytime > 0 ? item.maxplaytime : item.minplaytime,
-                h, m;
-
-            if (t > 0) {
-                h = Math.floor(t / 60);
-                m = t % 60;
-                str = '' + (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
-            } else {
-                console.log('formatPlayTime: ' + item.name + ' - ' + item.minplaytime + "-" + item.maxplaytime);
-            }
-            /*
-                        let str = "",
-                            min = item.minplaytime,
-                            max = item.maxplaytime;
-                        if (!(min === -1 && max === -1)) {
-                            if (item.minplaytime === item.maxplaytime) {
-                                str = item.maxplaytime;
-                            } else {
-                                str = item.minplaytime + (deviceSizeValue < 0 ? "-" : " - ") + item.maxplaytime;
-                            }
-                        }
-            */
-            return str;
-        }
     }
 }
 </script>

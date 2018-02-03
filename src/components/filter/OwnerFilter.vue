@@ -151,7 +151,7 @@ export default {
             if (query) {
                 val = query[this.id];
                 if (val !== undefined) {
-                    if (val === "all") {
+                    if (val === "off") {
                         this.enabled = false;
                     } else {
                         this.enabled = true;
