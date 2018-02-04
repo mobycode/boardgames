@@ -22,7 +22,7 @@
                     <div class="td d-none d-md-block col-md col-lg-1 col-xl-1 bestplayers"><span :title="item.bestplayersString">{{ item.bestplayersString }}</span></div>
                     <div class="td d-none d-lg-block col-lg col-xl-1 recplayers"><span :title="item.recplayersString">{{ item.recplayersString }}</span></div>
                     <div class="td col-3 col-sm col-md col-lg col-xl-1 playtime">
-                        <span :title="item | filterItemPlayTime">{{ item | filterItemPlayTime }}</span>
+                        <span :title="item | filterItemPlayTime(deviceSizeValue)">{{ item | filterItemPlayTime(deviceSizeValue) }}</span>
                     </div>
                     <div class="td d-none d-md-block col-md col-lg-1 col-xl-1 numplays"><span :title="item | filterItemPlays(selectedOwner)">{{ item | filterItemPlays(selectedOwner) }}</span></div>
                     <div class="td d-none d-lg-block col-lg col-xl owners"><span :title="item.ownersString">{{ item.ownersString }}</span></div>

@@ -14,6 +14,9 @@
             <app-player-count-filter></app-player-count-filter>
         </div>
         <div class="col-12 col-md-6 col-lg-6 mb-2">
+            <app-play-time-filter></app-play-time-filter>
+        </div>
+        <div class="col-12 col-md-6 col-lg-6 mb-2">
             <app-owner-filter></app-owner-filter>
         </div>
         <div class="col-12 col-md-6 col-lg-6 mb-2">
@@ -28,6 +31,7 @@ import RankFilter from '../filter/RankFilter.vue';
 import NameFilter from '../filter/NameFilter.vue';
 import WeightFilter from '../filter/WeightFilter.vue';
 import PlayerCountFilter from '../filter/PlayerCountFilter.vue';
+import PlayTimeFilter from '../filter/PlayTimeFilter.vue';
 import OwnerFilter from '../filter/OwnerFilter.vue';
 import ExpansionFilter from '../filter/ExpansionFilter.vue';
 
@@ -37,6 +41,7 @@ export default {
         appNameFilter: NameFilter,
         appWeightFilter: WeightFilter,
         appPlayerCountFilter: PlayerCountFilter,
+        appPlayTimeFilter: PlayTimeFilter,
         appOwnerFilter: OwnerFilter,
         appExpansionFilter: ExpansionFilter
     },
@@ -107,12 +112,12 @@ export default {
             min-width: 90px
     .input-group-sm
         .input-group-text.label
-            min-width: 65px
+            min-width: 75px
     .input-group-text.label
-        min-width: 80px
+        min-width: 90px
         background-color: #fff
     span button,
-        min-width: 90px
+        min-width: 100px
         text-align: left
 
 .input-group-text.label

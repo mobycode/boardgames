@@ -97,6 +97,9 @@ export default {
                             this.cardsPerRow = i;
                         }
                     }
+                    if (this.cardsPerRow === undefined) {
+                        this.cardsPerRow = i;
+                    }
                 }
                 console.log(`<> Tiles::updateCards: this.cardHeight [${this.cardHeight}] this.cardsPerRow [${this.cardsPerRow}]`);
             }

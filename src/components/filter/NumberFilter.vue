@@ -117,7 +117,8 @@ export default {
     methods: {
         matches(item) {
             let matches = true,
-                itemValue = item[this.valueProperty],
+                valueProperty = this.action.valueProperty || this.valueProperty,
+                itemValue = item[valueProperty],
                 itemMinValue = item[this.minValueProperty || this.valueProperty],
                 itemMaxValue = item[this.maxValueProperty || this.valueProperty];
 
@@ -133,13 +134,13 @@ export default {
                         matches = (Array.isArray(itemValue) && itemValue.includes(this.value));
                         break;
                     case comparisons.ITEM_RANGE:
-                        matches = (this.value >= itemMinValue && this.value <= itemMaxValue);
+                        matches = (itemMinValue !== -1 && itemMaxValue !== -1 && this.value >= itemMinValue && this.value <= itemMaxValue);
                         break;
                     case comparisons.USER_RANGE:
-                        matches = (itemMinValue >= this.minValue && itemMaxValue <= this.maxValue);
+                        matches = (itemMinValue !== -1 && itemMaxValue !== -1 && itemMinValue >= this.minValue && itemMaxValue <= this.maxValue);
                         break;
                     case comparisons.DUAL_RANGE:
-                        matches = (this.minValue >= itemMinValue && this.maxValue <= itemMaxValue);
+                        matches = (itemMinValue !== -1 && itemMaxValue !== -1 && this.minValue >= itemMinValue && this.maxValue <= itemMaxValue);
                         break;
                     case comparisons.NO_VALUE:
                         matches = (itemValue === -1);

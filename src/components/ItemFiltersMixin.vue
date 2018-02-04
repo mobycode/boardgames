@@ -27,29 +27,16 @@ export default {
         },
 
         filterItemPlayTime(item, deviceSizeValue) {
-            let str = '',
-                t = item.maxplaytime > 0 ? item.maxplaytime : item.minplaytime,
-                h, m;
-
-            if (t > 0) {
-                h = Math.floor(t / 60);
-                m = t % 60;
-                str = '' + (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
-            } else {
-                console.log('filterItemPlayTime: ' + item.name + ' - ' + item.minplaytime + "-" + item.maxplaytime);
-            }
-            /*
-                let str = "",
-                    min = item.minplaytime,
-                    max = item.maxplaytime;
-                if (!(min === -1 && max === -1)) {
-                    if (item.minplaytime === item.maxplaytime) {
-                        str = item.maxplaytime;
-                    } else {
-                        str = item.minplaytime + (deviceSizeValue < 0 ? "-" : " - ") + item.maxplaytime;
-                    }
+            let str = "",
+                min = item.minplaytime,
+                max = item.maxplaytime;
+            if (!(min === -1 && max === -1)) {
+                if (item.minplaytime === item.maxplaytime) {
+                    str = item.maxplaytime;
+                } else {
+                    str = item.minplaytime + (deviceSizeValue < 0 ? "-" : " - ") + item.maxplaytime;
                 }
-            */
+            }
             return str;
         }
     }

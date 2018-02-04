@@ -43,7 +43,7 @@ export default {
             this.filterChanged();
         }
 
-        if (this.dropdowns.length > 0) {
+        if (this.dropdowns && this.dropdowns.length > 0) {
             window.addEventListener('click', (evt) => {
                 for (let dropdown of this.dropdowns) {
                     let elem = document.getElementById(dropdown.id);

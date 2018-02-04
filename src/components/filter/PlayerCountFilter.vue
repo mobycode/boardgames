@@ -11,7 +11,7 @@
                 <span>
                     <button type="button" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-players" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ actionText }}</button>
                     <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
-                        <a v-for="(action, index) in actions" class="dropdown-item" href="javascript:void(0);" @click="setPlayerCountAction(index, $event)">{{ action.text }}</a>
+                        <a v-for="(action, index) in actions" class="dropdown-item" href="javascript:void(0);" @click="setAction(index, $event)">{{ action.text }}</a>
                     </div>
                 </span>
             </div>
@@ -41,11 +41,13 @@ export default {
             },
             {
                 text: 'best with',
-                comparison: comparisons.CONTAINS
+                comparison: comparisons.CONTAINS,
+                valueProperty: 'bestplayers'
             },
             {
                 text: 'recommended for',
-                comparison: comparisons.CONTAINS
+                comparison: comparisons.CONTAINS,
+                valueProperty: 'recplayers'
             },
             {
                 text: 'between',
@@ -65,12 +67,6 @@ export default {
             valueProperty: 'bestplayers',
             minValueProperty: 'minplayers',
             maxValueProperty: 'maxplayers'
-        }
-    },
-    methods: {
-        setPlayerCountAction(actionIndex, evt) {
-            this.valueProperty = actionIndex === 1 ? 'bestplayers' : 'recplayers';
-            this.setAction(actionIndex, evt);
         }
     }
 }
