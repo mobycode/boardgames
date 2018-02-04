@@ -6,6 +6,7 @@ import Vuex from 'vuex'
 import App from './App.vue'
 import { routes } from './routes'
 import store from './store/store'
+import { sync } from 'vuex-router-sync'
 
 Vue.use(VueRouter)
 Vue.use(VueResource)
@@ -19,9 +20,13 @@ const router = new VueRouter({
     routes: routes
 })
 
+const unsync = sync(store, router);
+
 new Vue({
   el: '#app',
   router,
   store,
   render: h => h(App)
 })
+
+//unsync();

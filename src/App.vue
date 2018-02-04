@@ -60,9 +60,11 @@ export default {
     },
     created() {
         //setTimeout(() => { // uncomment to test store loading
-        let name = this.$route.name;
+        let name = this.$route.name,
+            query = this.$route.query;
         this.$router.push({
-            name: 'loading'
+            name: 'loading',
+            query // pass current query so store.state.route.query is defined in loadStore
         });
         this.$store.dispatch('loadStore').then((data) => {
             if (name && !(name === 'loading' || name === 'load-error')) {

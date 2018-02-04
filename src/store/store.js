@@ -165,24 +165,41 @@ const state = {
 
 const mutations = {
     'TOGGLE_DESKTOP_SITE' (state) {
-        console.log("<> TOGGLE_DESKTOP_SITE: "+!state.desktopSite);
+        //console.log("<> store::TOGGLE_DESKTOP_SITE: "+!state.desktopSite);
         state.desktopSite = !state.desktopSite;
     },
     'SET_MOBILE_HEIGHT' (state, mobileHeight) {
-        //console.log("<> SET_MOBILE_HEIGHT: "+mobileHeight);
+        //console.log("<> store::SET_MOBILE_HEIGHT: "+mobileHeight);
         state.mobileHeight = mobileHeight;
     },
     'SET_DEVICE_SIZE' (state, deviceSize) {
-        //console.log("<> SET_DEVICE_SIZE: "+deviceSize);
+        //console.log("<> store::SET_DEVICE_SIZE: "+deviceSize);
         state.deviceSize = deviceSize;
     },
     'LOAD_ERROR' (state, response) {
-        console.log("-> LOAD_ERROR");
+        console.log("-> store::LOAD_ERROR");
         state.loadError = true;
-        console.log("<- LOAD_ERROR");
+        console.log("<- store::LOAD_ERROR");
+    },
+    'FROM_QUERY' (state) {
+        const query = state.route.query;
+
+        console.log(`-> store::FROM_QUERY: query ${query}`);
+        if (query) {
+            console.log(`<> store::FROM_QUERY: query.search ${query.search}`);
+            if (query.search !== undefined) {
+                state.searchString = query.search;
+                console.log(`<> store::FROM_QUERY: search ${state.searchString}`);
+            }
+            if (query.selectedOwner !== undefined && this.getters.allOwners.includes(query.selectedOwner)) {
+                state.selectedOwner = query.selectedOwner;
+                console.log(`<> store::FROM_QUERY: selectedOwner ${state.selectedOwner}`);
+            }
+        }
+        console.log("<- store::FROM_QUERY");
     },
     'SET_ITEMS' (state, itemsMap) {
-        console.log("-> SET_ITEMS");
+        console.log("-> store::SET_ITEMS");
 
         // create store items from itemMap items
         let items = [],
@@ -190,7 +207,7 @@ const mutations = {
 
         Object.keys(itemsMap).forEach( (objectid) => {
             item = itemsMap[objectid];
-            //console.log("   SET_ITEMS: -> itemsMap.forEach: item.name ["+item.name+"]");
+            //console.log("   store::SET_ITEMS: -> itemsMap.forEach: item.name ["+item.name+"]");
 
             item.objectid = objectid;
 
@@ -203,17 +220,17 @@ const mutations = {
             item.ownersString = formatOwners(item.owners);
 
             items.push(item);
-            //console.log("   SET_ITEMS: <- itemsMap.forEach");
+            //console.log("   store::SET_ITEMS: <- itemsMap.forEach");
         });
 
         state.items = items;
-        console.log("   SET_ITEMS: set");
+        console.log("   store::SET_ITEMS: set");
         filterItems(state);
-        console.log("   SET_ITEMS: filtered");
+        console.log("   store::SET_ITEMS: filtered");
         sortItems(state);
-        console.log("   SET_ITEMS: sortred");
+        console.log("   store::SET_ITEMS: sortred");
 
-        console.log("<- SET_ITEMS");
+        console.log("<- store::SET_ITEMS");
     },
     'SET_TIME' (state, time) {
         state.time = time;
@@ -264,23 +281,27 @@ const mutations = {
         filterItems(state);
         console.log('<- store::UPDATE_FILTERS');
     },
-    'UPDATE_SEARCH' (state, searchString) {
+    'UPDATE_SEARCH' (state, update) {
         console.log('-> store::UPDATE_SEARCH');
+        const {searchString,router} = update;
         state.searchString = searchString;
+        router.push({
+            query: Object.assign({}, state.route.query, {
+                search: searchString === '' ? undefined : searchString
+            })
+        });
         filterItems(state);
         console.log('<- store::UPDATE_SEARCH');
     },
-    'RESET_SELECTED_OWNER' (state) {
-        console.log('-> store::RESET_SELECTED_OWNER');
-        state.selectedOwner = OWNER_JUSTIN;
-        if (state.sort && state.sort.properties[0] === 'numplays') {
-            sortItems(state);
-        }
-        console.log('<- store::RESET_SELECTED_OWNER');
-    },
-    'SELECT_OWNER' (state, owner) {
-        console.log('-> store::SELECT_OWNER('+owner+')');
+    'SELECT_OWNER' (state, update) {
+        console.log('-> store::SELECT_OWNER('+update+')');
+        const {owner,router} = update;
         state.selectedOwner = owner;
+        router.push({
+            query: Object.assign({}, state.route.query, {
+                selectedOwner: owner === '' ? undefined : owner
+            })
+        });
         if (state.sort && state.sort.properties[0] === 'numplays') {
             sortItems(state);
         }
@@ -311,7 +332,7 @@ const actions = {
     },
     updateSearch({commit}, update) {
         console.log('-> store::updateSearch');
-        commit('UPDATE_SEARCH', update.searchString);
+        commit('UPDATE_SEARCH', update);
         console.log('<- store::updateSearch');
     },
     setSort({commit}, update) {
@@ -321,15 +342,18 @@ const actions = {
     },
     setSelectedOwner({commit}, update) {
         console.log('-> store::setSelectedOwner');
-        commit('SELECT_OWNER', update.owner);
+        commit('SELECT_OWNER', update);
         console.log('<- store::setSelectedOwner');
     },
     resetSelectedOwner({commit}, update) {
         console.log('-> store::resetSelectedOwner');
-        commit('RESET_SELECTED_OWNER');
+        update.owner = OWNER_JUSTIN;
+        commit('SELECT_OWNER', update);
         console.log('<- store::resetSelectedOwner');
     },
     loadStore({commit}) {
+        commit('FROM_QUERY');
+
         return new Promise((resolve, reject) => {
             Vue.http.get('data.json')
                 .then(response => response.json())
@@ -337,14 +361,14 @@ const actions = {
                     if (data) {
                         const items = data.items;
                         const time = data.time;
-                        console.log("<- loadStore: items ["+Object.keys(items).length+"] time ["+time+"]");
+                        console.log("-> store::loadStore: items ["+Object.keys(items).length+"] time ["+time+"]");
                         commit('SET_ITEMS', items);
                         commit('SET_TIME', time);
                         resolve(data);
-                        console.log("<- loadStore");
+                        console.log("<- store::loadStore");
                     }
                 }, response => {
-                    console.log('loadStore error')
+                    console.log('<> store::loadStore error')
                     commit('LOAD_ERROR', response)
                     reject(response);
                     console.log(response)

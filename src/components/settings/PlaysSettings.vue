@@ -46,12 +46,15 @@ export default {
             this.dropdownOpen = false;
             if (oldOwner !== owner) {
                 this.$store.dispatch('setSelectedOwner', {
-                    owner: owner
+                    owner: owner,
+                    router: this.$router // pass router so store can update query
                 });
             }
         },
         reset() {
-            this.$store.dispatch('resetSelectedOwner');
+            this.$store.dispatch('resetSelectedOwner', {
+                router: this.$router // pass router so store can update query
+            });
         }
     },
     created() {

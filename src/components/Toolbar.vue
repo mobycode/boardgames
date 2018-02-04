@@ -35,9 +35,9 @@
                 </div>
                 <div class="col-5 col-sm-5 col-md-4 col-lg-3 col-xl-3">
                     <div class="input-group" :class="{'input-group-sm': smallIcons}">
-                        <input class="form-control" id="search" placeholder="Search names" v-model="searchString" @keyup="updateSearch" type="text">
+                        <input class="form-control" id="search" placeholder="Search names" v-model="searchString" type="text">
                         <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" :disabled="searchString === ''" type="button" @click="clearSearch"><i class="fas fa-times"></i></button>
+                            <button class="btn btn-outline-secondary" :disabled="searchString === ''" type="button" @click="searchString = ''"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
                 </div>
@@ -84,11 +84,21 @@ export default {
             SETTINGS_FILTERS: SETTINGS_FILTERS,
             SETTINGS_PLAYS: SETTINGS_PLAYS,
             settingsExpanded: false,
-            activeSettings: SETTINGS_FILTERS,
-            searchString: ''
+            activeSettings: SETTINGS_FILTERS
         }
     },
     computed: {
+        searchString: {
+            get() {
+                return this.$store.state.searchString;
+            },
+            set(value) {
+                this.$store.dispatch('updateSearch', {
+                    searchString: value,
+                    router: this.$router // pass router so store can update query
+                });
+            }
+        },
         deviceSizeValue() {
             return this.$store.getters.deviceSizeValue;
         },
@@ -157,22 +167,8 @@ export default {
             // hack to update device deviceSize
             this.$parent.$parent.setDeviceSize();
         },
-        updateSearch() {
-            if (this._oldSearchString !== this.searchString) {
-                this._oldSearchString = this.searchString;
-                this.$store.dispatch('updateSearch', {
-                    searchString: this.searchString
-                });
-
-            }
-        },
-        clearSearch() {
-            if (this.searchString !== '') {
-                this.searchString = '';
-                this.updateSearch();
-            }
-        },
         resetSettings() {
+            this.searchString = '';
             this.$children.forEach((child) => {
                 child.reset();
             });
