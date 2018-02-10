@@ -59,9 +59,17 @@ const filterItems = (state) => {
 const searchItems = (state) => {
     if (state.searchString !== '') {
         console.log('-> store::searchItems');
-        const searchString = state.searchString.toLowerCase();
+        const searchStrings = state.searchString.toLowerCase().split('|').filter(str => str !== '');
         const preSearchLength = state.filteredItems.length;
-        state.filteredItems = state.filteredItems.filter(item => item.name.toLowerCase().indexOf(searchString) !== -1);
+        const searchStringsLength = searchStrings.length;
+        let i;
+        state.filteredItems = state.filteredItems.filter((item) => {
+            let match = false;
+            for (i=0; i<searchStringsLength && !match; i++) {
+                match = item.name.toLowerCase().indexOf(searchStrings[i]) !== -1;
+            }
+            return match;
+        });
         console.log('<- store::searchItems: '+preSearchLength+' -> '+state.filteredItems.length);
     }
 };
@@ -188,7 +196,11 @@ const mutations = {
         if (query) {
             console.log(`<> store::FROM_QUERY: query.search ${query.search}`);
             if (query.search !== undefined) {
-                state.searchString = query.search;
+                if (Array.isArray(query.serach)) {
+                    state.searchString = query.search;
+                } else {
+                    state.searchString = query.search.join('|');
+                }
                 console.log(`<> store::FROM_QUERY: search ${state.searchString}`);
             }
             if (query.selectedOwner !== undefined && this.getters.allOwners.includes(query.selectedOwner)) {
@@ -287,7 +299,7 @@ const mutations = {
         state.searchString = searchString;
         router.push({
             query: Object.assign({}, state.route.query, {
-                search: searchString === '' ? undefined : searchString
+                search: searchString === '' ? undefined : searchString.split('|').filter(str => str !== '')
             })
         });
         filterItems(state);

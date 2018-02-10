@@ -186,6 +186,8 @@ sub _debug {
         if (not(exists($options{OPTION_APPEND})) || $options{OPTION_APPEND} == FALSE) {
             $msg = "   ".$msg;
         }
+    } else {
+        $msg = "   ".$msg;
     }
     _log($msg, $options_ref);
 }
@@ -824,6 +826,7 @@ sub process_pictures {
 
     $pictures_hash_ref = json_hash_from_file("pictures", "");
 
+    my $pictureless_ref = {};
     @allobjectids = keys(%$pictures_hash_ref);
     $updates = 0;
     $objectid_count = scalar(@allobjectids);
@@ -838,14 +841,37 @@ sub process_pictures {
         $item_hash_ref = $items_hash_ref->{$objectid};
         $picture_hash_ref = $pictures_hash_ref->{$objectid};
 
-        $item_hash_ref->{&ITEM_KEY_PICTURE} = $picture_hash_ref->{"id"};
-        if (exists($picture_hash_ref->{"ext"})) {
-            $item_hash_ref->{&ITEM_KEY_PICTURE_EXT} = $picture_hash_ref->{"ext"};
+        if ($picture_hash_ref->{"id"} eq "") {
+            $pictureless_ref->{$objectid} = "1";
+        } else {
+            $item_hash_ref->{&ITEM_KEY_PICTURE} = $picture_hash_ref->{"id"};
+            if (exists($picture_hash_ref->{"ext"})) {
+                $item_hash_ref->{&ITEM_KEY_PICTURE_EXT} = $picture_hash_ref->{"ext"};
+            }
+            $updates++;
+            #_debug("process_pictures: added picture ".$pictures_hash_ref->{$objectid}." for $objectid");
         }
-        $updates++;
-        #_debug("process_pictures: added picture ".$pictures_hash_ref->{$objectid}." for $objectid");
     }
-    _exit("process_pictures: $updates updates");
+    
+    _debug("process_pictures: $updates updates");
+
+    @allobjectids = keys(%$items_hash_ref);
+    $objectid_count = scalar(@allobjectids);
+    for ($i=0; $i < $objectid_count; $i++) {
+        $objectid = $allobjectids[$i];
+        if (not(exists($pictureless_ref->{$objectid}))) {
+            $item_hash_ref = $items_hash_ref->{$objectid};
+
+            if ( $item_hash_ref->{&ITEM_KEY_SUBTYPE} eq "boardgame"
+              && exists($item_hash_ref->{&ITEM_KEY_OWNERS})
+              && not(exists($item_hash_ref->{&ITEM_KEY_PICTURE})) ) 
+            {
+                _debug("process_pictures: Missing picture for $objectid ".$item_hash_ref->{&ITEM_KEY_NAME});
+            }
+        }
+    }
+
+    _exit("process_pictures");
 };# end process_pictures
 
 

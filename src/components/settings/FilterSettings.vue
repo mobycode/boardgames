@@ -109,7 +109,7 @@ export default {
 
     .input-group-sm.input-group-xs
         .input-group-text
-            min-width: 90px
+            min-width: 95px
     .input-group-sm
         .input-group-text.label
             min-width: 75px
