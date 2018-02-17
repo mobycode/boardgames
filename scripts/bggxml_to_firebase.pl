@@ -40,7 +40,12 @@ use constant DATABASE_BGG => "DATABASE_BGG";
 use constant DATABASE_MOBYBEAVER => "DATABASE_MOBYBEAVER";
 use constant DATABASE => &DATABASE_BGG;
 
-use constant SUBTYPES => ["boardgame", "boardgameexpansion", "prevowned", "played"];
+use constant SUBTYPES => [
+    "boardgame",
+    "boardgameexpansion",
+    "prevowned",
+    "played"
+];
 
 use constant USERS_TO_OWNERS => {
     "mobybeaver" => "Justin",
@@ -221,21 +226,15 @@ sub stringify_hash {
 #       $args_hash_ref - reference to hash of parsed command line arguments
 # -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise 
 sub get_bggxml_json {
-    my ($rc, $skip_http, $error, $ua, $user_hash_ref, $response, $url, $attempts, $max_attempts, $sleep, @users, @subtypes, $user, $subtype, $temp_hash_ref, $i, $j);
+    my ($rc, $user_hash_ref, $url, $requests_ref, $responses_ref, $request_hash_ref, $response_hash_ref, @users, @subtypes, $user, $subtype, $temp_hash_ref, $i, $j);
     
     _enter("get_bggxml_json");
 
-    $ua = LWP::UserAgent->new;
-    $ua->timeout(10);
-    $ua->env_proxy;
-
     $rc = TRUE;
-    $skip_http = $args_hash_ref->{ARG_SKIP_HTTP};
-    $error = $args_hash_ref->{ARG_ERROR};
     @users = keys %{ USERS_TO_OWNERS() };
     @subtypes = @{ SUBTYPES() };
-    $max_attempts = ($skip_http ? 2 : 5);
-    $sleep = ($skip_http ? 0.5 : 10)*1000000;
+    $requests_ref = [];
+    $responses_ref = [];
 
     for ($i=0; $rc && $i < scalar(@users); $i++) {
         $user = $users[$i];
@@ -258,21 +257,45 @@ sub get_bggxml_json {
 
             if ($args_hash_ref->{ARG_SKIP_BGGXML}) {
                 # skip fetching bggxml files, load from file intead
-                $rc = TRUE;
                 $temp_hash_ref = json_hash_from_file("${user}.${subtype}");
                 _debug("get_bggxml_json:   loaded $subtype from file");
             } else {
-                # fetching bggxml
-                ($rc, $temp_hash_ref) = &fetch_bggxml_json("$subtype", $url, "${user}.${subtype}");
-
-                if (defined($temp_hash_ref)) {
-                    #json_hash_to_file($temp_hash_ref, "${user}.${subtype}");
-                }
+                $request_hash_ref = {};
+                $request_hash_ref->{"user"} = $user;
+                $request_hash_ref->{"subtype"} = $subtype;
+                $request_hash_ref->{"id"} = "$user.$subtype";
+                $request_hash_ref->{"url"} = $url;
+                $request_hash_ref->{"file"} = "${user}.${subtype}";
+                push(@{$requests_ref}, $request_hash_ref); 
             }
+        }
+    }
 
-            if (defined($temp_hash_ref)) {
-                $user_hash_ref->{$subtype} = $temp_hash_ref;
-            }
+    if ($args_hash_ref->{ARG_SKIP_BGGXML}) {
+        $rc = TRUE;
+        _exit("get_bggxml_json: $rc");
+        return $rc;
+    }
+
+
+    ($rc, $responses_ref) = &fetch_bggxml_json($requests_ref);
+
+
+    for ($i=0; $rc && $i < scalar(@{$responses_ref}); $i++) {
+        $response_hash_ref = @{$responses_ref}[$i];
+        $request_hash_ref = $response_hash_ref->{"request"};
+        $user = $request_hash_ref->{"user"};
+        $subtype = $request_hash_ref->{"subtype"};
+        $temp_hash_ref = $response_hash_ref->{"data"};
+
+        #_debug("get_bggxml_json: response");
+        #_debug("get_bggxml_json:    user: $user");
+        #_debug("get_bggxml_json:    subtype: $subtype");
+        #_debug("get_bggxml_json:    data: $temp_hash_ref");
+        if (defined($temp_hash_ref)) {
+            $user_hash_ref->{$subtype} = $temp_hash_ref;
+        } else {
+            #_debug("get_bggxml_json: $subtype not fetched for user $user");
         }
     }
 
@@ -289,6 +312,7 @@ sub get_bggxml_json {
 sub get_bgg_things_json {
     my ($objectids_ref, $label) = @_;
     my ($rc, $collection_hash_ref, $item_hash_ref, @users, $user, $owner, @allobjectids, $objectid_count, @objectids, $objectid, $name, $own, $prevowned, $url, @allthings, $things_hash_ref, $i, $j, $batch_size);
+    my ($requests_ref, $request_hash_ref, $responses_ref);
 
     _enter("get_bgg_things_json($label)");
 
@@ -337,7 +361,19 @@ sub get_bgg_things_json {
             #https://www.boardgamegeek.com/xmlapi2/thing?stats=1&id=41114,... 50 max ids 
             $url = "https://www.boardgamegeek.com/xmlapi2/thing?stats=1&id=".join(",", @objectids);
             #_debug("get_bgg_things_json: \$url = $url");
-            ($rc, $things_hash_ref) = &fetch_bggxml_json("${label}_$j", $url, "${label}_$j");
+
+            $request_hash_ref = {};
+            $request_hash_ref->{"id"} = "${label}_$j";
+            $request_hash_ref->{"url"} = $url;
+            $request_hash_ref->{"file"} = "${label}_$j";
+            $requests_ref = [];
+            push(@$requests_ref,$request_hash_ref);
+
+
+            ($rc, $responses_ref) = &fetch_bggxml_json($requests_ref);
+            $things_hash_ref = @{$responses_ref}[0]->{"data"};
+
+            #($rc, $things_hash_ref) = &fetch_bggxml_json("${label}_$j", $url, "${label}_$j");
             #_debug("get_bgg_things_json: things_$j size: ".@{$things_hash_ref->{"items"}->{"item"}});
             #json_hash_to_file($things_hash_ref, "things_$j");
             $j += 1;
@@ -371,13 +407,17 @@ sub get_bgg_things_json {
 
 
 # fetch_bggxml_json - fetches bgg collections for all users
-#  -in: $json_hash_ref - reference to hash in which bgg xml will be stored
-#           $json_hash_ref->{$user}->{"collection"} = "bggxml"
-#       $args_hash_ref - reference to hash of parsed command line arguments
-# -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise 
+#  -in: $requests_ref - reference to an array of request hashes; ech request hash must define an
+#           id, url, and file properties
+# -out: list of two values:
+#       $rc - return code; TRUE if all bggxml is successfully retrieved; FALSE otherwise
+#       $responses_ref - reference to an array of response objects with the following properties:
+#           request - reference to its passed request hash
+#           data - json strong response data if successful
 sub fetch_bggxml_json {
-    my ($id, $url, $file) = @_;
-    my ($rc, $temp_json_hash_ref, $skip_http, $error, $ua, $response, $attempts, $max_attempts, $sleep);
+    my ($requests_ref) = @_;
+    my ($totalTodo, $totalDone, $request_hash_ref, $id, $url, $file, $content);
+    my ($responses_ref, $response_hash_ref, $rc, $temp_json_hash_ref, $skip_http, $error, $ua, $response, $attempts, $max_attempts, $sleep, $i);
     
 #    _enter("fetch_bggxml_json: ${id}");
 
@@ -385,45 +425,83 @@ sub fetch_bggxml_json {
     $ua->timeout(10);
     $ua->env_proxy;
 
+    $totalTodo = scalar(@{$requests_ref});
+    $totalDone = 0;
+    $responses_ref = [];
     $rc = TRUE;
     $skip_http = $args_hash_ref->{ARG_SKIP_HTTP};
     $error = $args_hash_ref->{ARG_ERROR};
     $max_attempts = ($skip_http ? 2 : 5);
-    $sleep = ($skip_http ? 0.5 : 10)*1000000;
+    $sleep = ($skip_http ? 5 : 60)*1000000;
 
-    _debug("fetch_ bggxml_json:   getting ${id}...", LOG_NONEWLINE);
-    $attempts = 1;
-    $response = $skip_http ? undef : $ua->get($url);
-    while ($attempts < $max_attempts && ($skip_http || $response->code == HTTP::Status->HTTP_ACCEPTED)) {
-        usleep($sleep);
+    foreach $request_hash_ref (@{$requests_ref}) {
+        $url = $request_hash_ref->{"url"};
+        $response_hash_ref = {};
+        $response_hash_ref->{"request"} = $request_hash_ref;
+        $response_hash_ref->{"done"} = FALSE;
+        push(@{$responses_ref}, $response_hash_ref);
+    }
+
+    $attempts = 0; 
+    while ($attempts < $max_attempts && $totalTodo != $totalDone) {
         $attempts += 1;
-        _debug(".", LOG_APPEND_NONEWLINE);
-        $response = $skip_http ? undef : $ua->get($url);
+        _debug("fetch_ bggxml_json: start attempt ${attempts}/${max_attempts}");
+        if ($attempts != 1) {
+            usleep($sleep);
+        }
+
+        $i = -1;
+        foreach $request_hash_ref (@{$requests_ref}) {
+            $i++;
+            $id = $request_hash_ref->{"id"};
+            $url = $request_hash_ref->{"url"};
+            $file = $request_hash_ref->{"file"};
+            $response_hash_ref = @{$responses_ref}[$i];
+
+            if (not($response_hash_ref->{"done"})) {
+                _debug("fetch_ bggxml_json:   getting ${id}...", LOG_NONEWLINE);
+                $response = $skip_http ? undef : $ua->get($url);
+                $response_hash_ref->{"response"} = $response;
+
+                if (not($skip_http) && $response->code == HTTP::Status->HTTP_OK) {
+                    _debug("done", LOG_APPEND);
+                    $response_hash_ref->{"done"} = TRUE;
+                    $totalDone += 1;
+
+                    $content = $response->decoded_content;
+                    $response_hash_ref->{"data"} = JSON->new->utf8(1)->decode($XML2JSON->convert($content));
+                    #json_hash_to_file($response_hash_ref->{"data"}, $file);
+                } elsif ($skip_http && not($error)) { #&& int(rand(2)) == 1) {
+                    _debug("done (skipped)", LOG_APPEND);
+                    $response_hash_ref->{"done"} = TRUE;
+                    $totalDone += 1;
+                } else {
+                    _debug($skip_http ? "skipped" : ($response->code == HTTP::Status->HTTP_ACCEPTED ? "accepted" : "???"), LOG_APPEND);
+                    $rc = FALSE;
+                }
+            }
+        }
+        _debug("fetch_ bggxml_json: end attempt ${attempts}/${max_attempts}");
     }
 
-    if (not($skip_http) && $response->code == HTTP::Status->HTTP_OK) {
-        my $content = $response->decoded_content;
-        #open OUT_FH, ">$dir/data/$file.xml" or die "$file.xml ".$!;
-        #{
-        #    no warnings;
-        #    print OUT_FH $content;
-        #}
-        #close OUT_FH;
+    $rc = TRUE;
+    if ($totalTodo != $totalDone) {
+        _debug("fetch_ bggxml_json: FAILED requests");
+        $i = -1;
+        foreach $request_hash_ref (@{$requests_ref}) {
+            $i++;
+            $id = $request_hash_ref->{"id"};
+            $response_hash_ref = @{$responses_ref}[$i];
 
-        _debug("done", LOG_APPEND_NONEWLINE);
-
-        $temp_json_hash_ref = JSON->new->utf8(1)->decode($XML2JSON->convert($content));
-        #json_hash_to_file($temp_json_hash_ref, $file);
-    } elsif ($skip_http && not($error)) {
-        _debug("done (skipped)", LOG_APPEND_NONEWLINE);
-    } else {
-        _debug("FAILED", LOG_APPEND_NONEWLINE);
-        $rc = FALSE;
+            if (not($response_hash_ref->{"done"})) {
+                _debug("fetch_ bggxml_json:   ${id}");
+                $rc = FALSE;
+            }
+        }
     }
-    _debug(" ($attempts/$max_attempts)", LOG_APPEND);
 
-#    _exit("fetch_bggxml_json: ".&stringify_hash($temp_json_hash_ref));
-    return ($rc, $temp_json_hash_ref);
+    _exit("fetch_bggxml_json: ".($rc ? "success" : "FAILED")." ($attempts/$max_attempts)");
+    return ($rc, $responses_ref);
 }
 
 
@@ -490,6 +568,7 @@ sub process_user {
         #_debug("process_user: \$type [$type]");
 
         if (not(exists $users_hash_ref->{$type}->{"items"}->{"item"})) {
+            _debug("process_user: $type items not found");
             next;
         }
         
@@ -949,10 +1028,10 @@ sub upload_to_firebase {
     _enter("upload_to_firebase");
 
     if (&DATABASE eq DATABASE_MOBYBEAVER) {
-        _enter("upload_to_firebase: usinig mobybeaver-games");
+        _enter("upload_to_firebase: using mobybeaver-games");
         $database = "mobybeaver-games";
     } else {
-        _enter("upload_to_firebase: usinig bgg-games");
+        _enter("upload_to_firebase: using bgg-games");
         $database = "bgg-games";
     }
 
