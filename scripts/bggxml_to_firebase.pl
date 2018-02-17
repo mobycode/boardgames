@@ -226,7 +226,7 @@ sub stringify_hash {
 #       $args_hash_ref - reference to hash of parsed command line arguments
 # -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise 
 sub get_bggxml_json {
-    my ($rc, $user_hash_ref, $url, $requests_ref, $responses_ref, $request_hash_ref, $response_hash_ref, @users, @subtypes, $user, $subtype, $temp_hash_ref, $i, $j);
+    my ($rc, $url, $requests_ref, $responses_ref, $request_hash_ref, $response_hash_ref, @users, @subtypes, $user, $subtype, $temp_hash_ref, $i, $j);
     
     _enter("get_bggxml_json");
 
@@ -240,8 +240,7 @@ sub get_bggxml_json {
         $user = $users[$i];
         _debug("get_bggxml_json: user ${user}...");
 
-        $user_hash_ref = {};
-        $json_hash_ref->{$user} = $user_hash_ref;
+        $json_hash_ref->{$user} = {};
 
         for ($j=0; $rc && $j < scalar(@subtypes); $j++) {
             $subtype = $subtypes[$j];
@@ -283,17 +282,17 @@ sub get_bggxml_json {
 
     for ($i=0; $rc && $i < scalar(@{$responses_ref}); $i++) {
         $response_hash_ref = @{$responses_ref}[$i];
-        $request_hash_ref = $response_hash_ref->{"request"};
-        $user = $request_hash_ref->{"user"};
-        $subtype = $request_hash_ref->{"subtype"};
+        $user = $response_hash_ref->{"request"}->{"user"};
+        $subtype = $response_hash_ref->{"request"}->{"subtype"};
         $temp_hash_ref = $response_hash_ref->{"data"};
 
         #_debug("get_bggxml_json: response");
         #_debug("get_bggxml_json:    user: $user");
         #_debug("get_bggxml_json:    subtype: $subtype");
         #_debug("get_bggxml_json:    data: $temp_hash_ref");
+        #_debug("get_bggxml_json:    data->items: ".$temp_hash_ref->{"items"});
         if (defined($temp_hash_ref)) {
-            $user_hash_ref->{$subtype} = $temp_hash_ref;
+            $json_hash_ref->{$user}->{$subtype} = $temp_hash_ref;
         } else {
             #_debug("get_bggxml_json: $subtype not fetched for user $user");
         }
