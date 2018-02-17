@@ -44,21 +44,8 @@
             </div>
             <transition name="fade" mode="out-in">
                 <div class="settings" v-show="settingsExpanded">
-                    <ul class="nav" v-if="deviceSizeValue > 0">
-                        <li class="nav-item">
-                            <a class="nav-link" :class="{active: activeSettings === SETTINGS_FILTERS}" href="javascript:void(0)" @click="setActiveSettings(SETTINGS_FILTERS)" :title="activeSettings !== SETTINGS_FILTERS ? 'Show filter settings' : ''">Filters</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" :class="{active: activeSettings === SETTINGS_PLAYS}" href="javascript:void(0)" @click="setActiveSettings(SETTINGS_PLAYS)" :title="activeSettings !== SETTINGS_PLAYS ? 'Show plays logged settings' : ''">Plays</a>
-                        </li>
-                    </ul>
-                    <div>
-                        <div class="section" v-if="activeSettings === SETTINGS_FILTERS">
-                            <app-filter-settings></app-filter-settings>
-                        </div>
-                        <div class="section" v-else>
-                            <app-plays-settings></app-plays-settings>
-                        </div>
+                    <div class="section">
+                        <app-filter-settings></app-filter-settings>
                     </div>
                 </div>
             </transition>
@@ -210,6 +197,8 @@ export default {
         padding-left: 8px
     .settings-menu.btn
         padding-left: 0px
+    .reset-filter .btn
+        padding-top: 0px
     .reset-filter.reset-filter-disabled>span>i
         color: #333
     .view-toggle

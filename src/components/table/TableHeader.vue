@@ -17,7 +17,7 @@
         <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('bestplayers')"><span :class="{ sorted: isSorted('bestplayers') }">Best</span></div>
         <div class="th sortable d-none d-lg-block col-lg col-xl-1" @click="sortBy('recplayers')"><span :class="{ sorted: isSorted('recplayers') }">Recom<wbr>mended</span></div>
         <div class="th sortable col-3 col-sm col-md col-lg col-xl-1" @click="sortBy('maxplaytime')"><span :class="{ sorted: isSorted('maxplaytime') }">Play<br>Time</span></div>
-        <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('numplays')"><span :class="{ sorted: isSorted('numplays') }">Plays<br>Logged</span></div>
+        <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('numplays')"><span :class="{ sorted: isSorted('numplays') }">Plays<br><a href="javascript:void(0)" @click.stop="toggleOwner()">{{ selectedOwner }}</a></span></div>
         <div class="th sortable d-none d-lg-block col-lg col-xl" @click="sortBy('owners')"><span :class="{ sorted: isSorted('owners') }">Owners</span></div>
     </div>
 </div>
@@ -72,6 +72,9 @@ export default {
         },
         isSortDescending() {
             return this.$store.getters.isSortDescending;
+        },
+        selectedOwner() {
+            return this.$store.getters.selectedOwner;
         }
     },
     methods: {
@@ -82,6 +85,11 @@ export default {
         },
         isSorted(id) {
             return this.sortId === id;
+        },
+        toggleOwner() {
+            this.$store.dispatch('toggleSelectedOwner', {
+                router: this.$router // pass router so store can update query
+            });
         }
     }
 }

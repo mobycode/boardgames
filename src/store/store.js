@@ -160,6 +160,7 @@ const state = {
     items: [],
     time: -1,
     selectedOwner: OWNER_JUSTIN,
+    ownersWithPlays: [],
     searchString: '',
     filters: {},
     filteredItems: [],
@@ -235,6 +236,7 @@ const mutations = {
             //console.log("   store::SET_ITEMS: <- itemsMap.forEach");
         });
 
+        state.ownersWithPlays = ALL_OWNERS.filter( (o) => ( items.some( (item) => (item.numplays || {})[o] !== undefined ) ) );
         state.items = items;
         console.log("   store::SET_ITEMS: set");
         filterItems(state);
@@ -318,7 +320,7 @@ const mutations = {
             sortItems(state);
         }
         console.log('<- store::SELECT_OWNER');
-    },
+    }
 };
 
 const actions = {
@@ -356,6 +358,12 @@ const actions = {
         console.log('-> store::setSelectedOwner');
         commit('SELECT_OWNER', update);
         console.log('<- store::setSelectedOwner');
+    },
+    toggleSelectedOwner({commit, state}, update) {
+        console.log('-> store::toggleSelectedOwner');
+        update.owner = state.ownersWithPlays[(state.ownersWithPlays.indexOf(state.selectedOwner)+1) % state.ownersWithPlays.length];
+        commit('SELECT_OWNER', update);
+        console.log('<- store::toggleSelectedOwner');
     },
     resetSelectedOwner({commit}, update) {
         console.log('-> store::resetSelectedOwner');

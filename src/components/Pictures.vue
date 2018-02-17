@@ -17,14 +17,17 @@
                         <div v-masonry-tile v-for="(item, idx) in displayedItems" class="pic-parent">
                             <div class="pic">
                                 <div class="rank">
-                                    <a :href="item | filterItemHref" :title="item.name" target="_blank">{{item | filterItemRank}}</a>
+                                    <span><a :href="item | filterItemHref" :title="item.name" target="_blank">{{item | filterItemRank}}</a></span>
                                 </div>
                                 <div :class="[!!item.picture ? 'pic-picture' : 'pic-thumbnail']">
-                                    <img :src="item | formatImgSrc"></img>
+                                    <img :src="item | formatItemPictureSrc"></img>
                                 </div>
                                 <div class="name">
-                                    <a :href="item | filterItemHref" :title="item.name" target="_blank">{{item.name}}</a>
+                                    <span><a :href="item | filterItemHref" :title="item.name" target="_blank">{{item.name}}</a></span>
                                 </div>
+                                <label for="modal-switch" class="show-game-modal" role="button" data-toggle="modal" data-target="#myModal" @click="$emit('showModal', item)">
+                                    <i class="fa fa-expand-arrows-alt"></i>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -129,7 +132,7 @@ export default {
                 this.loaded = Math.min(this.filteredItems.length, this.loaded + 30); // just load 30 new cards
                 console.log(`<> Pictures::updateCards: loading updated from ${pre} -> ${this.loaded}`);
             }
-        },
+        }
     },
     watch: {
         displayedItems(value) {
@@ -161,22 +164,11 @@ export default {
         // remove event listeners
         this.scroller.removeEventListener('scroll', this.onScroll);
         window.removeEventListener('resize', this.onResize);
-    },
-    filters: {
-        formatImgSrc(item) {
-            let src;
-            if (item.picture) {
-                src = '//cf.geekdo-images.com/images/pic' + item.picture + '_md.' + (item.pictureext || 'jpg');
-            } else {
-                src = item.thumbnail;
-            }
-            return src;
-        }
     }
 }
 </script>
 
-<style lang="sass" scoped>
+<style lang="sass">
 .flex-page-content
     padding-top: 8px
     padding-bottom: 8px
@@ -185,21 +177,23 @@ export default {
     height: auto
     .pic
         position: relative
-        .rank a,
-        .name a
-            font-size: 12px
-            color: white
+        .rank span,
+        .name span
             position: absolute
             transform: translateX(-50%)
-            color: white
-            text-decoration: none
             text-align: center
-            //text-shadow: 2px 2px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,0px 2px 0 #000,2px 0px 0 #000,0px -2px 0 #000,-2px 0px 0 #000,2px 2px 5px #000
-            text-shadow: 1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,0px 1px 0 #000,1px 0px 0 #000,0px -1px 0 #000,-1px 0px 0 #000,1px 1px 5px #000
-        .rank a
+
+            a
+                font-size: 12px
+                color: white
+                text-decoration: none
+                //text-shadow: 2px 2px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,0px 2px 0 #000,2px 0px 0 #000,0px -2px 0 #000,-2px 0px 0 #000,2px 2px 5px #000
+                text-shadow: 1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,0px 1px 0 #000,1px 0px 0 #000,0px -1px 0 #000,-1px 0px 0 #000,1px 1px 5px #000
+
+        .rank span
             top: 4px
             left: 50%
-        .name a
+        .name span
             bottom: 4px
             left: 50%
             width: 100%
@@ -228,4 +222,8 @@ export default {
     .rank a,
     .name a
         font-size: 10px
+
+/* hide zoom on mobile */
+.device-xs .pic-parent label.show-game-modal
+    display: none
 </style>

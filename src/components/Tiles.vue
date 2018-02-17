@@ -11,6 +11,9 @@
                 <div v-else v-for="(item, idx) in filteredItems" class="col-6 col-sm-4 col-md-4 col-lg-2 text-center card-parent">
                     <div class="card">
                         <div class="rank">{{item | filterItemRank}}</div>
+                        <label for="modal-switch" class="show-game-modal" role="button" data-toggle="modal" data-target="#myModal" @click="$emit('showModal', item)">
+                            <i class="fa fa-image"></i>
+                        </label>
                         <div class="card-img-top"><img class="img-fluid" :src="''"></div>
                         <div class="card-body">
                             <a :href="item | filterItemHref" :title="item.name" target="_blank">{{ item.name }}</a>
@@ -219,9 +222,4 @@ export default {
             padding: 8px 8px 8px 8px
         .card-footer
             padding: 0px 8px 6px 8px
-
-//.card-body
-//    overflow: hidden
-//    a
-//        text-overflow: ellipsis
 </style>

@@ -99,7 +99,7 @@ export default {
                 el;
 
             //console.log("-> App::setDeviceSize");
-
+            classObject['device-xs'] = false;
             for (const size in this.DEVICE_SIZES) {
                 classObject['device-' + size] = false;
                 el = document.querySelector('.device-detector.device-' + size);

@@ -38,6 +38,16 @@ export default {
                 }
             }
             return str;
+        },
+
+        formatItemPictureSrc(item) {
+            let src;
+            if (item.picture) {
+                src = '//cf.geekdo-images.com/images/pic' + item.picture + '_md.' + (item.pictureext || 'jpg');
+            } else {
+                src = item.thumbnail;
+            }
+            return src;
         }
     }
 }

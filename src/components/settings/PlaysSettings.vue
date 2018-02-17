@@ -9,7 +9,7 @@
                 <span>
                     <button type="button" id="playsDropdownButtonGroup" :class="{ show: dropdownOpen }" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown-plays" aria-haspopup="true" :aria-expanded="dropdownOpen" @click="toggleDropdown">{{ selectedOwner }}</button>
                     <div class="dropdown-menu" :class="{ show: dropdownOpen }">
-                        <a v-for="owner in allOwners " class="dropdown-item " href="javascript:void(0);" @click="setSelectedOwner(owner) ">{{ owner }}</a>
+                        <a v-for="owner in ownersWithPlays " class="dropdown-item " href="javascript:void(0);" @click="setSelectedOwner(owner) ">{{ owner }}</a>
                     </div>
                 </span>
             </div>
@@ -29,8 +29,8 @@ export default {
         deviceSizeValue() {
             return this.$store.getters.deviceSizeValue;
         },
-        allOwners() {
-            return this.$store.getters.allOwners;
+        ownersWithPlays() {
+            return this.$store.getters.ownersWithPlays;
         },
         selectedOwner() {
             return this.$store.getters.selectedOwner;
