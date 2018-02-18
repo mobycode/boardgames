@@ -431,7 +431,7 @@ sub fetch_bggxml_json {
     $skip_http = $args_hash_ref->{ARG_SKIP_HTTP};
     $error = $args_hash_ref->{ARG_ERROR};
     $max_attempts = ($skip_http ? 2 : 5);
-    $sleep = ($skip_http ? 5 : 60)*1000000;
+    $sleep = ($skip_http ? 5 : 90)*1000000;
 
     foreach $request_hash_ref (@{$requests_ref}) {
         $url = $request_hash_ref->{"url"};

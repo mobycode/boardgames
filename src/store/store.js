@@ -197,10 +197,10 @@ const mutations = {
         if (query) {
             console.log(`<> store::FROM_QUERY: query.search ${query.search}`);
             if (query.search !== undefined) {
-                if (Array.isArray(query.serach)) {
-                    state.searchString = query.search;
-                } else {
+                if (Array.isArray(query.search)) {
                     state.searchString = query.search.join('|');
+                } else {
+                    state.searchString = query.search;
                 }
                 console.log(`<> store::FROM_QUERY: search ${state.searchString}`);
             }
@@ -313,7 +313,7 @@ const mutations = {
         state.selectedOwner = owner;
         router.push({
             query: Object.assign({}, state.route.query, {
-                selectedOwner: owner === '' ? undefined : owner
+                selectedOwner: (owner === '' || owner === OWNER_JUSTIN) ? undefined : owner
             })
         });
         if (state.sort && state.sort.properties[0] === 'numplays') {

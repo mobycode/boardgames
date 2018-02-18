@@ -44,14 +44,8 @@ export default {
         }
 
         if (this.dropdowns && this.dropdowns.length > 0) {
-            window.addEventListener('click', (evt) => {
-                for (let dropdown of this.dropdowns) {
-                    let elem = document.getElementById(dropdown.id);
-                    if (!elem || !elem.contains(evt.target)) {
-                        dropdown.open = false;
-                    }
-                }
-            });
+            window.addEventListener('click', this.windowHandler);
+            window.addEventListener('touchend', this.windowHandler);
         }
     },
     methods: {
@@ -81,6 +75,14 @@ export default {
                         dropdown.open = !dropdown.open;
                     }
                 });
+            }
+        },
+        windowHandler(evt) {
+            for (let dropdown of this.dropdowns) {
+                let elem = document.getElementById(dropdown.id);
+                if (!elem || !elem.contains(evt.target)) {
+                    dropdown.open = false;
+                }
             }
         }
     }

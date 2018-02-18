@@ -24,6 +24,11 @@ fixOutline();
 window.addEventListener('click', () => {
     document.body.classList.remove('kb-nav-used');
 });
+window.addEventListener('keydown', (evt) => {
+    if (["Tab", "ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(evt.key)) {
+        document.body.classList.add('kb-nav-used');
+    }
+}, true);
 
 export default {
     name: 'app',

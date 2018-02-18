@@ -4,21 +4,15 @@
         <div class="col">
             <div class="row">
                 <div class="col toolbar">
-                    <div style="display: inline-block; vertical-align: middle;">
-                        <button type="button" class="settings-menu btn" @click="expandCollapseSettings">
-                            <div :class="{ dropup: settingsExpanded, dropdown: !settingsExpanded }" :title="settingsExpanded ? 'Hide settings' : 'Show settings'">
-                                <i class="fas fa-cogs" :class="{'fa-lg': !smallIcons}"></i>
-                                <i class="fas" :class="{ 'fa-lg': !smallIcons, 'fa-caret-down': !settingsExpanded, 'fa-caret-up': settingsExpanded}"></i>
-                            </div>
-                        </button>
-                    </div>
-                    <div class="reset-filter" :class="{'reset-filter-disabled': !filtered}" style="display: inline-block; vertical-align: middle;" title="Reset filters">
-                        <button type="button" class="btn" :disabled="!filtered" @click="resetSettings">
-                            <span class="fas fa-stack" :class="{'fa-lg': !smallIcons}">
-                                <i class="fas fa-filter fa-filter-clear fa-stack-1x"></i>
-                                <i class="fas fa-ban fa-stack-1x"></i>
-                            </span>
-                        </button>
+                    <div class="btn-toolbar filter-toolbar" role="toolbar" aria-label="Toolbar with fiter buttons">
+                        <div role="group" aria-label="Filter group" class="btn-group">
+                            <button type="button" class="settings-menu btn" :class="{'dropup': settingsExpanded}" @click="expandCollapseSettings" :title="settingsExpanded ? 'Hide filters' : 'Show filters'">
+                                <i class="fas fa-filter" :class="{'fa-lg': !smallIcons}"></i>
+                            </button>
+                            <button type="button" class="reset-filter btn" :disabled="!filtered" @click="resetFilters" :title="filtered ? 'Reset filters' : ''">
+                                <i class="fas fa-times" :class="{'fa-lg': !smallIcons}"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="btn-toolbar view-toggle" role="toolbar" aria-label="Toolbar with button groups">
                         <div class="btn-group mr-2" role="group" aria-label="First group">
@@ -56,22 +50,14 @@
 
 <script>
 import FilterSettings from './settings/FilterSettings.vue';
-import PlaysSettings from './settings/PlaysSettings.vue';
-
-const SETTINGS_FILTERS = 'filters';
-const SETTINGS_PLAYS = 'plays';
 
 export default {
     components: {
-        appFilterSettings: FilterSettings,
-        appPlaysSettings: PlaysSettings
+        appFilterSettings: FilterSettings
     },
     data() {
         return {
-            SETTINGS_FILTERS: SETTINGS_FILTERS,
-            SETTINGS_PLAYS: SETTINGS_PLAYS,
-            settingsExpanded: false,
-            activeSettings: SETTINGS_FILTERS
+            settingsExpanded: false
         }
     },
     computed: {
@@ -110,10 +96,6 @@ export default {
     methods: {
         expandCollapseSettings() {
             this.settingsExpanded = !this.settingsExpanded;
-            this.activeSettings = SETTINGS_FILTERS;
-        },
-        setActiveSettings(selected) {
-            this.activeSettings = selected;
         },
         onTable() {
             this.$router.push({
@@ -154,23 +136,12 @@ export default {
             // hack to update device deviceSize
             this.$parent.$parent.setDeviceSize();
         },
-        resetSettings() {
+        resetFilters() {
             this.searchString = '';
+            this.settingsExpanded = false;
             this.$children.forEach((child) => {
                 child.reset();
             });
-        }
-    },
-    updated() {
-        if (this.oldActiveSettings !== this.activeSettings) {
-            this.oldActiveSettings = this.activeSettings;
-        }
-    },
-    watch: {
-        deviceSizeValue(newValue) {
-            if (newValue < 1) {
-                this.activeSettings = SETTINGS_FILTERS;
-            }
         }
     }
 }
@@ -186,7 +157,7 @@ export default {
     padding-bottom: 8px
     overflow: visible
 
-    .settings-menu .dropup
+    .settings-menu.dropup
         color: #0056b3
 
     .btn
@@ -195,27 +166,36 @@ export default {
         border: 0px
         padding-right: 8px
         padding-left: 8px
+
     .settings-menu.btn
         padding-left: 0px
-    .reset-filter .btn
-        padding-top: 0px
-    .reset-filter.reset-filter-disabled>span>i
+    .reset-filter:disabled i
         color: #333
+
+    .filter-toolbar,
     .view-toggle
         display: inline
         .btn + .btn
             padding-left: 0px
         .btn
             box-shadow: none !important
-        .btn:focus
-            i
-                color: #0056b3
+
+
+    // .filter-toolbar,
+    // .view-toggle
+    //     .btn:focus
+    //         i
+    //             color: #0056b3
+
+    .view-toggle
         .btn,
-        .btn:focus,
+        // .btn:focus,
         .btn:active,
-        .btn.active
+        .btn.active,
+        .btn:disabled,
             background-color: #fff
             color: #0056b3
+            opacity:  1
         .btn.btn-outline-secondary
             color: #000
             border: 0
@@ -245,8 +225,10 @@ export default {
             .row + .row
                 margin-top: 50px
 
-body.kb-nav-used .view-toggle .btn:focus i
-    outline: -webkit-focus-ring-color auto 5px
+body.kb-nav-used
+    .filter-toolbar, .view-toggle
+        .btn:focus i
+            outline: -webkit-focus-ring-color auto 5px
 
 .fade-enter-active
     animation: fade-in 200ms ease-out forwards
@@ -272,5 +254,4 @@ body.kb-nav-used .view-toggle .btn:focus i
    color: transparent
    -webkit-text-stroke-width: 2px
    -webkit-text-stroke-color: #333
-
 </style>

@@ -10,23 +10,23 @@
                 <div class="input-group-text label d-none d-sm-flex">Owners</div>
             </div>
             <div class="input-group-append">
-                <span>
-                    <button type="button" :id="dropdowns[0].id" :class="{ show: dropdowns[0].open }" class="btn btn-secondary dropdown-toggle form-control-sm" data-toggle="dropdown-owners" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ ownerText }}</button>
+                <span :id="dropdowns[0].id">
+                    <button type="button" :class="{ show: dropdowns[0].open }" class="btn btn-secondary dropdown-toggle form-control-sm" data-toggle="dropdown-owners" aria-haspopup="true" :aria-expanded="dropdowns[0].open" @click="toggleDropdown(dropdowns[0].id)">{{ ownerText }}</button>
                     <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
                         <div class="form-check dropdown-item">
                             <label class="form-check-label">
-                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="true" @click="setOwned">Owned
+                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="true" @click="setOwned">Owned</input>
                             </label>
                         </div>
                         <div class="form-check dropdown-item" v-for="owner of allOwners">
                             <label class="form-check-label" style="margin-left: 25px;">
-                                <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!owned">{{ owner }}
+                                <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!owned">{{ owner }}</input>
                             </label>
                         </div>
                         <div class="form-check dropdown-item">
                             <label class="form-check-label">
-                                    <input class="form-check-input" type="radio" v-model="owned" v-bind:value="false" @click="setOwned">Unowned
-                                </label>
+                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="false" @click="setOwned">Unowned</input>
+                            </label>
                         </div>
                     </div>
                 </span>

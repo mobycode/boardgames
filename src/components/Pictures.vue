@@ -5,7 +5,7 @@
             <div class="row">
                 <div class="col no-matches">
                     <div class="row tr">
-                        <div class="col td text-center">No matches</div>
+                        <div class="col-12 td text-center">No matches</div>
                     </div>
                 </div>
             </div>

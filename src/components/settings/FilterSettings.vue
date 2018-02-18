@@ -112,12 +112,12 @@ export default {
             min-width: 95px
     .input-group-sm
         .input-group-text.label
-            min-width: 75px
+            min-width: 80px
     .input-group-text.label
-        min-width: 90px
+        min-width: 95px
         background-color: #fff
     span button,
-        min-width: 100px
+        min-width: 105px
         text-align: left
 
 .input-group-text.label
