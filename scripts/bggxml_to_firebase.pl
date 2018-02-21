@@ -311,13 +311,15 @@ sub get_bggxml_json {
 sub get_bgg_things_json {
     my ($objectids_ref, $label) = @_;
     my ($rc, $collection_hash_ref, $item_hash_ref, @users, $user, $owner, @allobjectids, $objectid_count, @objectids, $objectid, $name, $own, $prevowned, $url, @allthings, $things_hash_ref, $i, $j, $batch_size);
-    my ($requests_ref, $request_hash_ref, $responses_ref);
+    my ($requests_ref, $request_hash_ref, $responses_ref, $response_hash_ref);
 
     _enter("get_bgg_things_json($label)");
 
     $rc = TRUE;
     $j = 0;
-        @allobjectids = @{$objectids_ref};
+    @allobjectids = @{$objectids_ref};
+    $requests_ref = [];
+    $responses_ref = [];
 
     if ($args_hash_ref->{ARG_SKIP_THINGS}) {
         $things_hash_ref = json_hash_from_file("bgg.$label");
@@ -345,14 +347,15 @@ sub get_bgg_things_json {
     } else {
         $objectid_count = scalar(@allobjectids);
         $batch_size = $args_hash_ref->{ARG_PRODUCTION} ? 50 : 2;
+        @allthings = ();
     }
 
-    _debug("get_bgg_things_json: \$batch_size [$batch_size]");
+    _debug("get_bgg_things_json: \$batch_size [$batch_size] \$objectid_count [$objectid_count]");
 
     for ($i=0; $rc && $i < $objectid_count; $i++) {
         my $objectid = $allobjectids[$i];
         if ($i % $batch_size == 0) {
-            @objectids = [];
+            @objectids = ();
         }
         push(@objectids, $objectid);
 
@@ -365,31 +368,34 @@ sub get_bgg_things_json {
             $request_hash_ref->{"id"} = "${label}_$j";
             $request_hash_ref->{"url"} = $url;
             $request_hash_ref->{"file"} = "${label}_$j";
-            $requests_ref = [];
+            $j++;
             push(@$requests_ref,$request_hash_ref);
+        }
+    }
+
+    ($rc, $responses_ref) = &fetch_bggxml_json($requests_ref);
 
 
-            ($rc, $responses_ref) = &fetch_bggxml_json($requests_ref);
-            $things_hash_ref = @{$responses_ref}[0]->{"data"};
+    for ($i=0; $rc && $i < scalar(@{$responses_ref}); $i++) {
+        $response_hash_ref = @{$responses_ref}[$i];
+        $things_hash_ref = $response_hash_ref->{"data"};
 
-            #($rc, $things_hash_ref) = &fetch_bggxml_json("${label}_$j", $url, "${label}_$j");
-            #_debug("get_bgg_things_json: things_$j size: ".@{$things_hash_ref->{"items"}->{"item"}});
-            #json_hash_to_file($things_hash_ref, "things_$j");
-            $j += 1;
-
-            if (defined($things_hash_ref)) {
-                #_debug("get_bgg_things_json: DEFINED");
-                #_debug("get_bgg_things_json: pre push size: ".@allthings." \$rc [".stringify_bool($rc)."]");
-                if ($#objectids == 1) {
-                    my @temp;
-                    push(@temp, $things_hash_ref->{"items"}->{"item"});
-                    push(@allthings, @temp);
-                } else {
-                    push(@allthings, @{$things_hash_ref->{"items"}->{"item"}});
-                }
-                $rc = $args_hash_ref->{ARG_PRODUCTION}; # only fetch one batch if not production
-                #_debug("get_bgg_things_json: post push size: ".@allthings." \$rc [".stringify_bool($rc)."]");
+        if (defined($things_hash_ref)) {
+            #_debug("get_bgg_things_json: DEFINED");
+            _debug("get_bgg_things_json: pre push size: ".@allthings." \$rc [".stringify_bool($rc)."]");
+            #_debug("get_bgg_things_json: ref(item) ".ref($things_hash_ref->{"items"}->{"item"}));
+            if (ref($things_hash_ref->{"items"}->{"item"}) eq "HASH") {
+                my @temp;
+                push(@temp, $things_hash_ref->{"items"}->{"item"});
+                push(@allthings, @temp);
+            } elsif (ref($things_hash_ref->{"items"}->{"item"}) eq "ARRAY") {
+                push(@allthings, @{$things_hash_ref->{"items"}->{"item"}});
             }
+            if (not($args_hash_ref->{ARG_PRODUCTION})) {
+                $rc = FALSE;
+                _debug("get_bgg_things_json: not production; only fetching one batch");
+            }
+            _debug("get_bgg_things_json: post push size: ".@allthings." \$rc [".stringify_bool($rc)."]");
         }
     }
 
@@ -418,7 +424,7 @@ sub fetch_bggxml_json {
     my ($totalTodo, $totalDone, $request_hash_ref, $id, $url, $file, $content);
     my ($responses_ref, $response_hash_ref, $rc, $temp_json_hash_ref, $skip_http, $error, $ua, $response, $attempts, $max_attempts, $sleep, $i);
     
-#    _enter("fetch_bggxml_json: ${id}");
+    _enter("fetch_bggxml_json");
 
     $ua = LWP::UserAgent->new;
     $ua->timeout(10);
