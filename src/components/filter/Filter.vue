@@ -45,7 +45,6 @@ export default {
 
         if (this.dropdowns && this.dropdowns.length > 0) {
             window.addEventListener('click', this.windowHandler);
-            window.addEventListener('touchend', this.windowHandler);
         }
     },
     methods: {

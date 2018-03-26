@@ -41,6 +41,7 @@ use constant DATABASE_MOBYBEAVER => "DATABASE_MOBYBEAVER";
 use constant DATABASE => &DATABASE_BGG;
 
 use constant SUBTYPES => [
+#    "collection",
     "boardgame",
     "boardgameexpansion",
     "prevowned",
@@ -250,7 +251,7 @@ sub get_bggxml_json {
                 $url .= "&played=1&subtype=boardgame&stats=1";
             } elsif ($subtype eq "prevowned") {
                 $url .= "&prevowned=1&subtype=boardgame&stats=1";
-            } else {
+            } elsif ($subtype ne "collection") {
                 $url .= "&own=1&subtype=${subtype}&stats=1";
             }
 
@@ -370,11 +371,13 @@ sub get_bgg_things_json {
             $request_hash_ref->{"file"} = "${label}_$j";
             $j++;
             push(@$requests_ref,$request_hash_ref);
+            if (not($args_hash_ref->{ARG_PRODUCTION})) {
+                last;
+            }
         }
     }
 
     ($rc, $responses_ref) = &fetch_bggxml_json($requests_ref);
-
 
     for ($i=0; $rc && $i < scalar(@{$responses_ref}); $i++) {
         $response_hash_ref = @{$responses_ref}[$i];
@@ -424,7 +427,7 @@ sub fetch_bggxml_json {
     my ($totalTodo, $totalDone, $request_hash_ref, $id, $url, $file, $content);
     my ($responses_ref, $response_hash_ref, $rc, $temp_json_hash_ref, $skip_http, $error, $ua, $response, $attempts, $max_attempts, $sleep, $i);
     
-    _enter("fetch_bggxml_json");
+    _enter("fetch_bggxml_json: request count: "+scalar @$requests_ref);
 
     $ua = LWP::UserAgent->new;
     $ua->timeout(10);
@@ -475,7 +478,7 @@ sub fetch_bggxml_json {
 
                     $content = $response->decoded_content;
                     $response_hash_ref->{"data"} = JSON->new->utf8(1)->decode($XML2JSON->convert($content));
-                    #json_hash_to_file($response_hash_ref->{"data"}, $file);
+                    json_hash_to_file($response_hash_ref->{"data"}, $file);
                 } elsif ($skip_http && not($error)) { #&& int(rand(2)) == 1) {
                     _debug("done (skipped)", LOG_APPEND);
                     $response_hash_ref->{"done"} = TRUE;
@@ -563,7 +566,6 @@ sub process_user {
 
     _enter("process_user($user)");
 
-    my %items_hash = %$items_hash_ref;
     my ($type, $owner, @items, $item_hash_ref, $objectid, $subtype, $own, $name, $minplayers, $maxplayers, $playingtime, $minplaytime, $maxplaytime, $numplays, $image, $thumbnail, $yearpublished);
     my (@subtypes, @bggitems, %bggitem, $bggitem_ref);
     $owner = USERS_TO_OWNERS->{$user};
@@ -622,8 +624,8 @@ sub process_user {
                 }
             }
 
-            $item_hash_ref = $items_hash{$objectid};
-            if (exists $items_hash{$objectid}) {
+            $item_hash_ref = $items_hash_ref->{$objectid};
+            if (exists $items_hash_ref->{$objectid}) {
                 if ($numplays != -1) {
                     $item_hash_ref->{&ITEM_KEY_NUMPLAYS}->{$owner} = $numplays;
                 } else {
@@ -680,7 +682,6 @@ sub process_things {
 
     _enter("process_things: ".($compilations ? "compilations" : ""));
 
-    my %items_hash = %$items_hash_ref;
     my ($item_hash_ref, $objectid, $name, $update);
     my (%bggitem, $bggitem_ref);
     my ($ratings_hash_ref, $ranks_ref, $boardgame_rank_ref, $rank, $rank_hash_ref);
@@ -695,7 +696,7 @@ sub process_things {
         if ($compilations) {
             $objectid = $comp_ids_hash_ref->{$objectid};
         }
-        $item_hash_ref = $items_hash{$objectid};
+        $item_hash_ref = $items_hash_ref->{$objectid};
         $name = $item_hash_ref->{&ITEM_KEY_NAME};
 
         $ratings_hash_ref = $bggitem_ref->{"statistics"}->{"ratings"};
@@ -948,6 +949,7 @@ sub process_pictures {
 
             if ( $item_hash_ref->{&ITEM_KEY_SUBTYPE} eq "boardgame"
               && exists($item_hash_ref->{&ITEM_KEY_OWNERS})
+              && keys %{$item_hash_ref->{&ITEM_KEY_OWNERS}} > 0
               && not(exists($item_hash_ref->{&ITEM_KEY_PICTURE})) ) 
             {
                 _debug("process_pictures: Missing picture for $objectid ".$item_hash_ref->{&ITEM_KEY_NAME});
