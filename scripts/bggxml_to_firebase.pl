@@ -926,10 +926,14 @@ sub process_pictures {
         $item_hash_ref = $items_hash_ref->{$objectid};
         $picture_hash_ref = $pictures_hash_ref->{$objectid};
 
-        if ($picture_hash_ref->{"id"} eq "") {
+        if ($picture_hash_ref->{"none"} eq "true") {
             $pictureless_ref->{$objectid} = "1";
         } else {
-            $item_hash_ref->{&ITEM_KEY_PICTURE} = $picture_hash_ref->{"id"};
+            if (exists($picture_hash_ref->{"id"})) {
+                $item_hash_ref->{&ITEM_KEY_PICTURE} = $picture_hash_ref->{"id"};
+            } elsif (exists($picture_hash_ref->{"uri"})) {
+                $item_hash_ref->{&ITEM_KEY_PICTURE} = $picture_hash_ref->{"uri"};
+            }
             if (exists($picture_hash_ref->{"ext"})) {
                 $item_hash_ref->{&ITEM_KEY_PICTURE_EXT} = $picture_hash_ref->{"ext"};
             }

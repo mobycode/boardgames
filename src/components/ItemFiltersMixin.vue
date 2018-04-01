@@ -41,9 +41,11 @@ export default {
         },
 
         formatItemPictureSrc(item) {
-            let src;
-            if (item.picture) {
-                src = '//cf.geekdo-images.com/images/pic' + item.picture + '_md.' + (item.pictureext || 'jpg');
+            let src = item.picture;
+            if (src) {
+                if (src.length > 2 && src.substring(0, 2) !== '//') {
+                    src = '//cf.geekdo-images.com/images/pic' + src + '_md.' + (item.pictureext || 'jpg');
+                }
             } else {
                 src = item.thumbnail;
             }
