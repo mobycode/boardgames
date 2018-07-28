@@ -1,6 +1,6 @@
 <template>
-<div class="container-fluid thead">
-    <div class="row" :class="{ 'sort-descending': isSortDescending }">
+<div class="container-fluid thead" :class="{ 'sort-descending': isSortDescending }">
+    <div class="row">
         <div class="th sortable d-none d-sm-block col-sm col-md col-lg-1 col-xl-1" @click="sortBy('rank')"><span :class="{ sorted: isSorted('rank') }">Rank</span></div>
         <div class="th sortable col-6 col-sm-5 col-md-4 col-lg-3 col-xl-3" @click="sortBy('name')"><span :class="{ sorted: isSorted('name') }">Name</span></div>
         <div class="th sortable d-none d-sm-block col-sm col-md col-lg-1 col-xl-1" @click="sortBy('weight')"><span :class="{ sorted: isSorted('weight') }">Wei<wbr>ght</span></div>
