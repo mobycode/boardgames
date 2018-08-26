@@ -5,8 +5,8 @@
   "author": "",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot --mode development",
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules --mode production",
     "postbuild": "npm run copy",
     "copy": "cpx \"index.html\" docs | cpx \"*.png\" docs | cpx \"dist/*.*\" docs/dist",
     "deploy": "npm run build && npm run copy"
@@ -16,14 +16,14 @@
     "ejs": "^2.6.1",
     "fix-outline": "^0.1.1",
     "moment": "^2.22.2",
-    "node-sass": "^4.9.2",
-    "sass-loader": "^6.0.7",
-    "simplebar": "^2.6.1",
-    "vue": "^2.5.16",
-    "vue-masonry": "^0.10.17",
+    "simplebar": "^3.0.0-beta.4",
+    "uglify-js": "^3.4.8",
+    "vue": "^2.5.17",
+    "vue-cli": "^2.9.6",
+    "vue-masonry": "^0.11.6",
     "vue-resource": "^1.5.1",
     "vue-router": "^3.0.1",
-    "vuelidate": "^0.6.2",
+    "vuelidate": "^0.7.4",
     "vuex": "^3.0.1",
     "vuex-router-sync": "^5.0.0"
   },
@@ -33,12 +33,16 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-2": "^6.24.1",
     "cross-env": "^5.2.0",
-    "css-loader": "^0.28.11",
+    "css-loader": "^1.0.0",
     "file-loader": "^1.1.11",
+    "node-sass": "^4.9.3",
+    "sass-loader": "^7.1.0",
     "sass-resources-loader": "^1.3.3",
-    "vue-loader": "^13.7.2",
-    "vue-template-compiler": "^2.5.16",
-    "webpack": "^3.12.0",
-    "webpack-dev-server": "^2.11.2"
+    "uglifyjs-webpack-plugin": "^1.3.0",
+    "vue-loader": "^15.4.1",
+    "vue-template-compiler": "^2.5.17",
+    "webpack": "^4.17.1",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.6"
   }
 }
