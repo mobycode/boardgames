@@ -228,6 +228,7 @@ const mutations = {
             itemMapToArray(item, "owners");
             itemMapToArray(item, "prevowners");
             item.playersString = formatRange([item.minplayers,item.maxplayers]);
+            item.weightString = item.weight ? item.weight.toFixed(2) : 'None';
             item.bestplayersString = item.bestplayers ? formatRange(item.bestplayers) : 'None';
             item.recplayersString = item.recplayers ? formatRange(item.recplayers) : 'None';
             item.ownersString = formatOwners(item.owners);

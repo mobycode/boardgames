@@ -13,10 +13,6 @@ export default {
             return 'https://boardgamegeek.com/boardgame/' + item.objectid + '/';
         },
 
-        filterItemWeight(item) {
-            return item.weight.toFixed(2);
-        },
-
         filterItemPlayers(item, deviceSizeValue) {
             return item.minplayers + (deviceSizeValue && deviceSizeValue < 1 ? "-" : " - ") + item.maxplayers;
         },

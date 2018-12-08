@@ -35,7 +35,11 @@ const SORTS = {
         id: 'name',
         type: 'string'
     },
-    weight: 'weight',
+    weight: {
+        id: 'weight',
+        property: 'weightString',
+        type: 'string'
+    },
     minplayers: 'minplayers',
     maxplayers: 'maxplayers',
     players: {

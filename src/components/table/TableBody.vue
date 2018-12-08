@@ -11,7 +11,7 @@
                 <div v-for="(item, idx) in filteredItems" class="row tr" :class="{'bg-light': idx%2===0}">
                     <div class="td d-none d-sm-block col-sm col-md col-lg-1 col-xl-1 rank"><span :title="item | filterItemRank">{{ item | filterItemRank }}</span></div>
                     <div class="td col-6 col-sm-5 col-md-4 col-lg-3 col-xl-3 name"><span><a :href="item | filterItemHref" :title="item.name" target="_blank">{{ item.name }}</a></span></div>
-                    <div class="td d-none d-sm-block col-sm col-md col-lg-1 col-xl-1 weight"><span :title="item | filterItemWeight">{{ item | filterItemWeight }}</span></div>
+                    <div class="td d-none d-sm-block col-sm col-md col-lg-1 col-xl-1 weight"><span :title="item.weightString">{{ item.weightString }}</span></div>
                     <div class="td d-none d-lg-block col-lg col-xl players">
                         <div class="row">
                             <div class="col-6 minplayers"><span :title="item.minplayers">{{ item.minplayers }}</span></div>
