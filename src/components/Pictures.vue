@@ -155,7 +155,7 @@ export default {
     mounted() {
         // create simple bar and add scroll/resize events
         this.simplebar = new SimpleBar(this.$el);
-        this.scroller = this.$el.querySelector('.simplebar-scroll-content');
+        this.scroller = this.simplebar.getScrollElement();
         this.scroller.addEventListener('scroll', this.onScroll);
 
         window.addEventListener('resize', this.onResize);
