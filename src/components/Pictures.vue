@@ -171,7 +171,7 @@ export default {
 <style lang="sass">
 .flex-page-content
     padding-top: 8px
-    padding-bottom: 8px
+    padding-bottom: 0
 
 .pic-parent
     height: auto

@@ -175,7 +175,7 @@ export default {
 <style lang="sass" scoped>
 .flex-page-content
     padding-top: 8px
-    padding-bottom: 8px
+    padding-bottom: 0
 .card-parent
     padding-bottom: 10px
     .card

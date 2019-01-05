@@ -225,10 +225,10 @@ sub stringify_hash {
 #  -in: $json_hash_ref - reference to hash in which bgg xml will be stored
 #           $json_hash_ref->{$user}->{$type} = "bggxml"
 #       $args_hash_ref - reference to hash of parsed command line arguments
-# -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise 
+# -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise
 sub get_bggxml_json {
     my ($rc, $url, $requests_ref, $responses_ref, $request_hash_ref, $response_hash_ref, @users, @subtypes, $user, $subtype, $temp_hash_ref, $i, $j);
-    
+
     _enter("get_bggxml_json");
 
     $rc = TRUE;
@@ -266,7 +266,7 @@ sub get_bggxml_json {
                 $request_hash_ref->{"id"} = "$user.$subtype";
                 $request_hash_ref->{"url"} = $url;
                 $request_hash_ref->{"file"} = "${user}.${subtype}";
-                push(@{$requests_ref}, $request_hash_ref); 
+                push(@{$requests_ref}, $request_hash_ref);
             }
         }
     }
@@ -308,7 +308,7 @@ sub get_bggxml_json {
 #  -in: $json_hash_ref - reference to hash in which bgg xml will be stored
 #           $json_hash_ref->{$user}->{"collection"} = "bggxml"
 #       $args_hash_ref - reference to hash of parsed command line arguments
-# -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise 
+# -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise
 sub get_bgg_things_json {
     my ($objectids_ref, $label) = @_;
     my ($rc, $collection_hash_ref, $item_hash_ref, @users, $user, $owner, @allobjectids, $objectid_count, @objectids, $objectid, $name, $own, $prevowned, $url, @allthings, $things_hash_ref, $i, $j, $batch_size);
@@ -361,7 +361,7 @@ sub get_bgg_things_json {
         push(@objectids, $objectid);
 
         if ($i % $batch_size == ($batch_size-1) || $i == ($objectid_count-1)) {
-            #https://www.boardgamegeek.com/xmlapi2/thing?stats=1&id=41114,... 50 max ids 
+            #https://www.boardgamegeek.com/xmlapi2/thing?stats=1&id=41114,... 50 max ids
             $url = "https://www.boardgamegeek.com/xmlapi2/thing?stats=1&id=".join(",", @objectids);
             #_debug("get_bgg_things_json: \$url = $url");
 
@@ -425,8 +425,8 @@ sub get_bgg_things_json {
 sub fetch_bggxml_json {
     my ($requests_ref) = @_;
     my ($totalTodo, $totalDone, $request_hash_ref, $id, $url, $file, $content);
-    my ($responses_ref, $response_hash_ref, $rc, $temp_json_hash_ref, $skip_http, $error, $ua, $response, $attempts, $max_attempts, $sleep, $i);
-    
+    my ($responses_ref, $response_hash_ref, $rc, $temp_json_hash_ref, $skip_http, $error, $ua, $response, $attempts, $max_attempts, $sleep_s, $sleep_ms, $i);
+
     _enter("fetch_bggxml_json: request count: "+scalar @$requests_ref);
 
     $ua = LWP::UserAgent->new;
@@ -440,7 +440,8 @@ sub fetch_bggxml_json {
     $skip_http = $args_hash_ref->{ARG_SKIP_HTTP};
     $error = $args_hash_ref->{ARG_ERROR};
     $max_attempts = ($skip_http ? 2 : 5);
-    $sleep = ($skip_http ? 5 : 90)*1000000;
+    $sleep_s= ($skip_http ? 5 : 90);
+    $sleep_ms = $sleep_s*1000000;
 
     foreach $request_hash_ref (@{$requests_ref}) {
         $url = $request_hash_ref->{"url"};
@@ -450,13 +451,14 @@ sub fetch_bggxml_json {
         push(@{$responses_ref}, $response_hash_ref);
     }
 
-    $attempts = 0; 
+    $attempts = 0;
     while ($attempts < $max_attempts && $totalTodo != $totalDone) {
         $attempts += 1;
-        _debug("fetch_ bggxml_json: start attempt ${attempts}/${max_attempts}");
         if ($attempts != 1) {
-            usleep($sleep);
+            _debug("fetch_bggxml_json: sleeping for ${sleep_s} seconds...");
+            usleep($sleep_ms);
         }
+        _debug("fetch_bggxml_json: start attempt ${attempts}/${max_attempts}");
 
         $i = -1;
         foreach $request_hash_ref (@{$requests_ref}) {
@@ -467,7 +469,7 @@ sub fetch_bggxml_json {
             $response_hash_ref = @{$responses_ref}[$i];
 
             if (not($response_hash_ref->{"done"})) {
-                _debug("fetch_ bggxml_json:   getting ${id}...", LOG_NONEWLINE);
+                _debug("fetch_bggxml_json:   getting ${id}...", LOG_NONEWLINE);
                 $response = $skip_http ? undef : $ua->get($url);
                 $response_hash_ref->{"response"} = $response;
 
@@ -489,12 +491,12 @@ sub fetch_bggxml_json {
                 }
             }
         }
-        _debug("fetch_ bggxml_json: end attempt ${attempts}/${max_attempts}");
+        _debug("fetch_bggxml_json: end attempt ${attempts}/${max_attempts}");
     }
 
     $rc = TRUE;
     if ($totalTodo != $totalDone) {
-        _debug("fetch_ bggxml_json: FAILED requests");
+        _debug("fetch_bggxml_json: FAILED requests");
         $i = -1;
         foreach $request_hash_ref (@{$requests_ref}) {
             $i++;
@@ -502,7 +504,7 @@ sub fetch_bggxml_json {
             $response_hash_ref = @{$responses_ref}[$i];
 
             if (not($response_hash_ref->{"done"})) {
-                _debug("fetch_ bggxml_json:   ${id}");
+                _debug("fetch_bggxml_json:   ${id}");
                 $rc = FALSE;
             }
         }
@@ -539,7 +541,7 @@ sub json_hash_from_file {
     $json = join '', <IN_FH>;
     close IN_FH;
     #print $json;
-    
+
     $hash_ref = JSON->new->decode($json);
     #_enterExit("json_hash_from_file($name): hash keys [".keys(%$hash_ref)."]");
     return $hash_ref;
@@ -578,14 +580,14 @@ sub process_user {
             _debug("process_user: $type items not found");
             next;
         }
-        
+
         @bggitems = @{ $users_hash_ref->{$type}->{"items"}->{"item"} };
         _debug("process_user: \$type [$type] \@bggitems [".@bggitems."]");
 
         my $i = 0;
         foreach $bggitem_ref (@bggitems) {
             %bggitem = %$bggitem_ref;
-            
+
             # reset key values
             $i += 1;
             $name = $bggitem{"name"}->{'$t'};
@@ -676,7 +678,7 @@ sub process_user {
 #  -in: $json_hash_ref - reference to hash in which bgg xml will be stored
 #           $json_hash_ref->{$user}->{"collection"} = "bggxml"
 #       $args_hash_ref - reference to hash of parsed command line arguments
-# -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise 
+# -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise
 sub process_things {
     my ($things_ref, $compilations) = @_;
 
@@ -726,7 +728,7 @@ sub process_things {
             }
         }
         if ($compilations) {
-            $update = "compilation id [$objectid] name [$name] rank [".$item_hash_ref->{&ITEM_KEY_RANK}." -> $rank]"; 
+            $update = "compilation id [$objectid] name [$name] rank [".$item_hash_ref->{&ITEM_KEY_RANK}." -> $rank]";
         }
         $item_hash_ref->{&ITEM_KEY_RANK} = $rank;
         #end bgg rank
@@ -742,7 +744,7 @@ sub process_things {
 
         # only process rank/weight/rating for compilations
         if ($compilations) {
-            _debug($update); 
+            _debug($update);
             next;
         }
 
@@ -821,7 +823,7 @@ sub process_things {
             }
             if (defined($base_game_id)) { # && $objectid eq "11") {
                 $comp_ids_hash_ref->{$base_game_id} = $objectid;
-                _debug("process_things: item id [$objectid] name [".$item_hash_ref->{&ITEM_KEY_NAME}."] contains id [$base_game_id] name [$base_game_name]"); 
+                _debug("process_things: item id [$objectid] name [".$item_hash_ref->{&ITEM_KEY_NAME}."] contains id [$base_game_id] name [$base_game_name]");
             }
         }
         #end compilations
@@ -880,8 +882,8 @@ sub process_expansions {
         $exp_maxplaytime  =  $exp_item_ref->{&ITEM_KEY_MAXPLAYTIME};
 
         if ( ($exp_minplayers != -1  && $base_minplayers  > $exp_minplayers )
-          || ($exp_maxplayers != -1  && $base_maxplayers  < $exp_maxplayers ) 
-          || ($exp_minplaytime != -1 && $base_minplaytime < $exp_minplaytime) 
+          || ($exp_maxplayers != -1  && $base_maxplayers  < $exp_maxplayers )
+          || ($exp_minplaytime != -1 && $base_minplaytime < $exp_minplaytime)
           || ($exp_maxplaytime != -1 && $base_maxplaytime > $exp_maxplaytime) )
         {
             $updated = TRUE;
@@ -941,7 +943,7 @@ sub process_pictures {
             #_debug("process_pictures: added picture ".$pictures_hash_ref->{$objectid}." for $objectid");
         }
     }
-    
+
     _debug("process_pictures: $updates updates");
 
     @allobjectids = keys(%$items_hash_ref);
@@ -954,7 +956,7 @@ sub process_pictures {
             if ( $item_hash_ref->{&ITEM_KEY_SUBTYPE} eq "boardgame"
               && exists($item_hash_ref->{&ITEM_KEY_OWNERS})
               && keys %{$item_hash_ref->{&ITEM_KEY_OWNERS}} > 0
-              && not(exists($item_hash_ref->{&ITEM_KEY_PICTURE})) ) 
+              && not(exists($item_hash_ref->{&ITEM_KEY_PICTURE})) )
             {
                 _debug("process_pictures: Missing picture for $objectid ".$item_hash_ref->{&ITEM_KEY_NAME});
             }
@@ -1059,19 +1061,19 @@ sub upload_to_firebase {
     # caused by XML2JSON->convert
     json_hash_to_file($items_hash_ref, "temp");
     $items_hash_ref = json_hash_from_file("temp");
- 
+
     my $data_hash_ref = {};
     $data_hash_ref->{"items"}=$items_hash_ref;
     $data_hash_ref->{"time"}=time*1000;
 
     my $fb = Firebase->new(
         firebase => $database,
-        auth => { 
-            secret => $secret, 
-            data => { 
+        auth => {
+            secret => $secret,
+            data => {
                 uid => 'xxx',
-                username => 'fred' 
-            }, 
+                username => 'fred'
+            },
             admin => \1
         }
     );
