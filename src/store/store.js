@@ -376,24 +376,67 @@ const actions = {
         commit('FROM_QUERY');
 
         return new Promise((resolve, reject) => {
-            Vue.http.get('data.json')
-                .then(response => response.json())
-                .then(data => {
-                    if (data) {
-                        const items = data.items;
-                        const time = data.time;
-                        console.log("-> store::loadStore: items ["+Object.keys(items).length+"] time ["+time+"]");
-                        commit('SET_ITEMS', items);
-                        commit('SET_TIME', time);
-                        resolve(data);
-                        console.log("<- store::loadStore");
-                    }
-                }, response => {
-                    console.log('<> store::loadStore error')
-                    commit('LOAD_ERROR', response)
-                    reject(response);
-                    console.log(response)
-                });
+            let lastTime = localStorage.getItem("time") + 0;
+            let lastItems = localStorage.getItem("items");
+
+            const setItems = (items, time) => {
+              console.log("-> store::loadStore::setItems: items ["+Object.keys(items).length+"] time ["+time+"]");
+              commit('SET_ITEMS', items);
+              commit('SET_TIME', time);
+              resolve({
+                items: items,
+                time: time
+              });
+              console.log("<- store::loadStore::setItems");
+            };
+
+            const fetchData = () => {
+              console.log("   store::loadStore::fetchData...");
+              Vue.http.get('data.json')
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data) {
+                          localStorage.setItem("items", JSON.stringify(data.items));
+                          localStorage.setItem("time", data.time);
+                          setItems(data.items, data.time);
+                      }
+                  }, response => {
+                      console.log('   store::loadStore::fetchData error');
+                      console.log(response)
+                      if (lastItems) {
+                        setItems(JSON.parse(localStorage.getItem("items")), lastTime)
+                      } else {
+                        commit('LOAD_ERROR', response)
+                        reject(response);
+                      }
+                  });
+            };
+
+            const fetchTime = () => {
+              console.log("   store::loadStore::fetchTime...");
+              Vue.http.get('data/time.json')
+                  .then(response => response.json())
+                  .then(time => {
+                    console.log("   store::loadStore::fetchTime: time ["+time+"] lastTime ["+lastTime+"]");
+                      if (time > lastTime) {
+                          fetchData();
+                      } else {
+                          setItems(JSON.parse(localStorage.getItem("items")), lastTime)
+                      }
+                  }, response => {
+                      console.log('   store::loadStore::fetchTime error')
+                      console.log(response)
+                      fetchData();
+                  });
+            };
+
+            if (lastTime === 0) {
+                console.log("   store::loadStore: no local storage");
+                fetchData();
+            } else {
+                console.log("   store::loadStore: existing local storage");
+                fetchTime();
+            }
         })
     }
 };
