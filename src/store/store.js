@@ -381,8 +381,12 @@ const actions = {
 
             const setItems = (items, time) => {
               console.log("-> store::loadStore::setItems: items ["+Object.keys(items).length+"] time ["+time+"]");
+
+              let date = new Date();
+              date.setTime(time)
+
               commit('SET_ITEMS', items);
-              commit('SET_TIME', time);
+              commit('SET_TIME', date);
               resolve({
                 items: items,
                 time: time
