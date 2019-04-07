@@ -103,7 +103,7 @@ const sortItem = (itemA, itemB, state) => {
     for (const property of sort.properties) {
         a = itemA[property];
         b = itemB[property];
-        if (property === 'numplays') {
+        if (property === 'numplays' || property === 'lastplayed') {
             a = a ? a[state.selectedOwner] || -1 : -1;
             b = b ? b[state.selectedOwner] || -1 : -1;
         }
@@ -169,7 +169,8 @@ const state = {
         properties: ['rank'],
         types: ['number'],
         ascending: true
-    }
+    },
+    showNumPlays: true
 };
 
 const mutations = {
@@ -207,6 +208,9 @@ const mutations = {
             if (query.selectedOwner !== undefined && this.getters.allOwners.includes(query.selectedOwner)) {
                 state.selectedOwner = query.selectedOwner;
                 console.log(`<> store::FROM_QUERY: selectedOwner ${state.selectedOwner}`);
+            }
+            if (query.lastplayed) {
+                state.showNumPlays = false;
             }
         }
         console.log("<- store::FROM_QUERY");
@@ -317,7 +321,7 @@ const mutations = {
                 selectedOwner: (owner === '' || owner === OWNER_JUSTIN) ? undefined : owner
             })
         });
-        if (state.sort && state.sort.properties[0] === 'numplays') {
+        if (state.sort && (state.sort.properties[0] === 'numplays' || state.sort.properties[0] === 'lastplayed')) {
             sortItems(state);
         }
         console.log('<- store::SELECT_OWNER');
@@ -494,6 +498,9 @@ const getters = {
     allOwners(state) {
         //console.log('<> store::selectedOwner = '+state.selectedOwner)
         return ALL_OWNERS;
+    },
+    showNumPlays(state) {
+        return state.showNumPlays;
     }
 };
 

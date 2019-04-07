@@ -9,10 +9,13 @@ use XML::XML2JSON;
 use List::MoreUtils qw(first_index);
 use Data::Dumper;
 use Scalar::Util qw(looks_like_number); # parseInt equalivent for bggxml numeric values
-use Time::HiRes qw(time usleep); # getTimeStamp (time in microseconds), get_bgg_collection_json (sleep in microseconds)
-use POSIX qw(strftime);          # getTimeStamp (easier time formatting)
+use Time::HiRes qw(time usleep); # get_time_stamp (time in microseconds), get_bgg_collection_json (sleep in microseconds)
+use POSIX qw(strftime);          # get_time_stamp (easier time formatting)
 use Firebase;                    # put data in firebase db
 use Getopt::Long;
+use Date::Calc qw(Days_in_Month);
+use DateTime;
+use DateTime::Format::Duration;
 
 # always autoflush stderr/stdout
 use IO::Handle;
@@ -35,6 +38,7 @@ use constant ARG_SKIP_HTTP => "skip_http";
 use constant ARG_SKIP_BGGXML => "skip_bggxml";
 use constant ARG_SKIP_ITEMS => "skip_items";
 use constant ARG_SKIP_FIREBASE => "skip_firebase";
+use constant ARG_MONTHS_OF_PLAYS => "months_of_plays";
 
 use constant DATABASE_BGG => "DATABASE_BGG";
 use constant DATABASE_MOBYBEAVER => "DATABASE_MOBYBEAVER";
@@ -53,6 +57,11 @@ use constant USERS_TO_OWNERS => {
     "flettz" => "Joe",
     "highexodus" => "Ian",
     "archleech" => "Jason"
+};
+
+use constant PLAYS_USERS_TO_OWNERS => {
+    "mobybeaver" => "Justin",
+    "highexodus" => "Ian"
 };
 
 #use constant MIN_KEYS => FALSE;
@@ -90,6 +99,7 @@ use constant USERS_TO_OWNERS => {
   use constant ITEM_KEY_MINPLAYTIME => "minplaytime";
   use constant ITEM_KEY_MAXPLAYTIME => "maxplaytime";
   use constant ITEM_KEY_NUMPLAYS => "numplays";
+  use constant ITEM_KEY_LASTPLAYED => "lastplayed";
   use constant ITEM_KEY_OWNERS => "owners";
   use constant ITEM_KEY_PREVOWNERS => "pevowners";
   use constant ITEM_KEY_IMAGE => "image";
@@ -147,17 +157,60 @@ sub close_log {
     _enterExit("close_log");
     close LOG_FH;
 }
-sub getTimeStamp {
+sub get_time_stamp {
     my $t = time;
     my $ts = strftime("%Y%m%d %H:%M:%S", localtime($t));
     $ts .= sprintf(".%03d", ($t-int($t))*1000);
     return $ts;
 }
+sub get_month_and_year {
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+    return($mon+1,$year+1900);
+}
+sub get_previous_month_and_year {
+    my ($month, $year) = @_;
+    my ($previous_month, $previous_year) = ($month-1, $year);
+
+    if ($month == 1) {
+        $previous_month = 12;
+        $previous_year = $year-1;
+    }
+
+    return ($previous_month, $previous_year);
+}
+sub get_months_ago {
+    my ($date_string) = @_;
+    my ($year, $month, $day, $then, $now, $duration, $months_ago);
+
+    ($year, $month, $day) = ( $date_string =~ /^(\d\d\d\d)\-(\d\d)\-(\d\d)$/ );
+    $year = int($year);
+    $month = int($month);
+    $day = int($day);
+
+    $then = DateTime->new(year => $year, month => $month, day => $day, hour => 0, minute => 0, second => 0, time_zone  => 'UTC');
+    $now = DateTime->now(time_zone  => 'UTC');
+    $duration = $now - $then;
+    $months_ago = ($duration->years() *12) + $duration->months();
+
+    _debug("<> get_months_ago(${date_string}) = ${months_ago}");
+    return $months_ago;
+}
+sub date_to_epoch {
+    my ($date_string) = @_;
+    my ($year, $month, $day);
+
+    ($year, $month, $day) = ( $date_string =~ /^(\d\d\d\d)\-(\d\d)\-(\d\d)$/ );
+    $year = int($year);
+    $month = int($month);
+    $day = int($day);
+
+    return DateTime->new(year => $year, month => $month, day => $day, hour => 0, minute => 0, second => 0, time_zone  => 'UTC')->epoch();
+}
 sub _log {
     my ($msg, $options_ref) = @_;
     my %options = {};
     my $str = "$msg";
-    my $time = getTimeStamp();
+    my $time = get_time_stamp();
 
     if (ref($options_ref) eq "HASH") {
         %options = %{ $options_ref };
@@ -414,6 +467,109 @@ sub get_bgg_things_json {
 }
 
 
+# get_bgg_plays_json - fetches bgg collections for all users
+#  -in: $json_hash_ref - reference to hash in which bgg xml will be stored
+#           $json_hash_ref->{$user}->{"collection"} = "bggxml"
+#       $args_hash_ref - reference to hash of parsed command line arguments
+# -out: TRUE if all bggxml is successfully retrieved; FALSE otherwise
+sub get_bgg_plays_json {
+    my ($objectids_ref, $label) = @_;
+    my ($rc, $collection_hash_ref, $item_hash_ref, @users, $user, $owner, @allobjectids, $objectid_count, @objectids,
+        $objectid, $name, $own, $prevowned, $url, $plays_hash_ref, $data_hash_ref, $month, $year, $end, $done,
+        $month_count, $min_date, $max_date, $i, $j, $batch_size);
+    my ($requests_ref, $request_hash_ref, $responses_ref, $response_hash_ref);
+
+    _enter("get_bgg_plays_json($label)");
+
+    $rc = TRUE;
+    @users = keys %{ PLAYS_USERS_TO_OWNERS() };
+    $requests_ref = [];
+    $responses_ref = [];
+
+    $plays_hash_ref = json_hash_from_file("plays");
+
+    for ($i=0; $rc && $i < scalar(@users); $i++) {
+        $user = $users[$i];
+        _debug("get_bgg_plays_json: user ${user}...");
+
+        if (not(defined($plays_hash_ref->{$user}))) {
+            $plays_hash_ref->{$user} = {};
+        }
+
+        ($month, $year) = get_month_and_year();
+        $end = FALSE;
+        $month_count = 0;
+        for ($j=0; $rc && $j < $args_hash_ref->{ARG_MONTHS_OF_PLAYS} && !$end; $j++) {
+            if ($j != 0) {
+                $month--;
+                if ($month < 1) {
+                     $month = 12;
+                     $year--;
+                }
+            }
+
+            $min_date = sprintf("%4s-%02s-01", $year, $month);
+            $max_date = sprintf("%4s-%02s-%02s", $year, $month, Days_in_Month($year, $month));
+            $url = "https://www.boardgamegeek.com/xmlapi2/plays?username=${user}&mindate=${min_date}&maxdate=${max_date}";
+            $end = ($month == 11 && $year == 2013);
+            #_debug("get_bggxml_json:   ${year} ${month} ${min_date} ${max_date} ".stringify_bool($end)." ...");
+
+            $request_hash_ref = {};
+            $request_hash_ref->{"id"} = "${user}_${min_date}";
+            $request_hash_ref->{"user"} = $user;
+            $request_hash_ref->{"min_date"} = $min_date;
+            $request_hash_ref->{"url"} = $url;
+            $request_hash_ref->{"file"} = "${user}_${min_date}";
+
+            push(@$requests_ref,$request_hash_ref);
+        }
+    }
+
+    ($rc, $responses_ref) = &fetch_bggxml_json($requests_ref);
+
+    _debug("get_bgg_plays_json: request count: ".scalar(@{$requests_ref}));
+    for ($i=0; $rc && $i < scalar(@{$responses_ref}); $i++) {
+        $response_hash_ref = @{$responses_ref}[$i];
+        $data_hash_ref = $response_hash_ref->{"data"};
+
+        $request_hash_ref = @{$requests_ref}[$i];
+        $user = $request_hash_ref->{"user"};
+        $min_date = $request_hash_ref->{"min_date"};
+
+        my $dataplays_ref = ();
+        if (defined($data_hash_ref)) {
+            if (ref($data_hash_ref->{"plays"}->{"play"}) eq "HASH") {
+                push(@{$dataplays_ref}, $data_hash_ref->{"plays"}->{"play"});
+            } else {
+                $dataplays_ref = $data_hash_ref->{"plays"}->{"play"};
+            }
+            foreach my $dataplay_hash_ref (@{$dataplays_ref}) {
+                my $id = $dataplay_hash_ref->{'@id'};
+                my $date = $dataplay_hash_ref->{'@date'};
+                my $objectid = $dataplay_hash_ref->{"item"}->{'@objectid'};
+                if (not(exists($plays_hash_ref->{$user}->{$id}))) {
+                    my $play_hash_ref = {};
+                    $plays_hash_ref->{$user}->{$id} = $play_hash_ref;
+                    $play_hash_ref->{"date"} = date_to_epoch($date);
+                    $play_hash_ref->{"objectid"} = $dataplay_hash_ref->{"item"}->{'@objectid'};
+                    #_debug("added $id: $date $objectid ".date_to_epoch($date));
+                }
+            }
+        }
+        #_debug("get_bgg_plays_json: $user $min_date plays: ".scalar(@{$dataplays_ref}));
+    }
+
+    foreach $user (@users) {
+        _debug("get_bgg_plays_json: $user plays count: ".keys(%{$plays_hash_ref->{$user}}));
+    }
+
+    json_hash_to_file($plays_hash_ref, "plays");
+
+    _exit("get_bgg_plays_json");
+    return $plays_hash_ref;
+}
+
+
 # fetch_bggxml_json - fetches bgg collections for all users
 #  -in: $requests_ref - reference to an array of request hashes; ech request hash must define an
 #           id, url, and file properties
@@ -650,6 +806,7 @@ sub process_user {
                     &ITEM_KEY_MINPLAYTIME   => $minplaytime,
                     &ITEM_KEY_MAXPLAYTIME   => $maxplaytime,
                     &ITEM_KEY_NUMPLAYS      => {},
+                    &ITEM_KEY_LASTPLAYED    => {},
                     &ITEM_KEY_OWNERS        => $owners_ref,
                     &ITEM_KEY_IMAGE         => $image,
                     &ITEM_KEY_THUMBNAIL     => $thumbnail,
@@ -836,6 +993,40 @@ sub process_things {
     _exit("process_things");
 }
 
+
+# process_plays - update items lastplayed property based on given plays by users hash
+#  -in: $plays_by_users_hash_ref - reference to a hash in which includes users plays
+#           $plays_by_users_hash_ref->{$user}->{$playId}->{date|objectid}
+sub process_plays {
+    my ($plays_by_users_hash_ref) = @_;
+
+    _enter("process_plays");
+
+    foreach my $user (keys %$plays_by_users_hash_ref) {
+        my $owner = PLAYS_USERS_TO_OWNERS->{$user};
+        _debug("process_plays: user [${user}] plays [".keys(%{$plays_by_users_hash_ref->{$user}})."]");
+
+        foreach my $play_id (keys %{$plays_by_users_hash_ref->{$user}}) {
+            my $play_hash_ref = $plays_by_users_hash_ref->{$user}->{$play_id};
+            my $date = $play_hash_ref->{"date"};
+            my $objectid = $play_hash_ref->{"objectid"};
+            #if ($objectid eq "102794") { _debug("$user played $date"); }
+            if (exists($items_hash_ref->{$objectid})) {
+                my $item_hash_ref = $items_hash_ref->{$objectid};
+                if ($date > $item_hash_ref->{&ITEM_KEY_LASTPLAYED}->{$owner}) {
+                    #if ($objectid eq "102794") { _debug("$owner lastplayed updated from ".$item_hash_ref->{&ITEM_KEY_LASTPLAYED}->{$owner}." to ${date}"); }
+                    $item_hash_ref->{&ITEM_KEY_LASTPLAYED}->{$owner} = $date;
+                }
+            }
+        }
+    }
+
+    #my $item_hash_ref = $items_hash_ref->{"102794"};
+    #_debug("mobybeaver ".$item_hash_ref->{&ITEM_KEY_LASTPLAYED}->{"Justin"});
+    #_debug("highexodus ".$item_hash_ref->{&ITEM_KEY_LASTPLAYED}->{"Ian"});
+
+    _exit("process_plays");
+}
 
 sub process_expansions {
     my (@allobjectids, $objectid, $updated, $updates, $base_item_ref, $exp_item_ref, $str, $name, $i, $j);
@@ -1029,6 +1220,8 @@ sub bggxml_to_items {
 
     process_pictures();
 
+    process_plays(get_bgg_plays_json());
+
     json_hash_to_file($items_hash_ref, "items");
 
     _exit("bggxml_to_items");
@@ -1086,19 +1279,20 @@ sub upload_to_firebase {
 
 
 sub parse_arguments {
-    my ($production, $error, $skip_http, $skip_bggxml, $skip_things, $skip_items, $skip_firebase) = (FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE);
+    my ($production, $error, $skip_http, $skip_bggxml, $skip_things, $skip_items, $skip_firebase, $months_of_plays) = (FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 2);
 
     _enter("parse_arguments");
 
     # parse options
     GetOptions (
-        "production" => \$production,
-        "error"      => \$error,
-        "http"       => \$skip_http,
-        "bggxml"     => \$skip_bggxml,
-        "things"     => \$skip_things,
-        "items"      => \$skip_items,
-        "firebase"   => \$skip_firebase
+        "production"        => \$production,
+        "error"             => \$error,
+        "http"              => \$skip_http,
+        "bggxml"            => \$skip_bggxml,
+        "things"            => \$skip_things,
+        "items"             => \$skip_items,
+        "firebase"          => \$skip_firebase,
+        "months-of-plays=i" => \$months_of_plays
     ) or die("Error in command line arguments\n");
 
     if (!$skip_things) {
@@ -1109,13 +1303,14 @@ sub parse_arguments {
         $skip_firebase = TRUE;
     }
 
-    $args_hash_ref->{ARG_PRODUCTION}    = $production;
-    $args_hash_ref->{ARG_ERROR}         = $error;
-    $args_hash_ref->{ARG_SKIP_HTTP}     = $skip_http;
-    $args_hash_ref->{ARG_SKIP_BGGXML}   = $skip_bggxml;
-    $args_hash_ref->{ARG_SKIP_THINGS}   = !$skip_things;
-    $args_hash_ref->{ARG_SKIP_ITEMS}    = $skip_items;
-    $args_hash_ref->{ARG_SKIP_FIREBASE} = $skip_firebase;
+    $args_hash_ref->{ARG_PRODUCTION}      = $production;
+    $args_hash_ref->{ARG_ERROR}           = $error;
+    $args_hash_ref->{ARG_SKIP_HTTP}       = $skip_http;
+    $args_hash_ref->{ARG_SKIP_BGGXML}     = $skip_bggxml;
+    $args_hash_ref->{ARG_SKIP_THINGS}     = !$skip_things;
+    $args_hash_ref->{ARG_SKIP_ITEMS}      = $skip_items;
+    $args_hash_ref->{ARG_SKIP_FIREBASE}   = $skip_firebase;
+    $args_hash_ref->{ARG_MONTHS_OF_PLAYS} = $months_of_plays;
 
     _exit("parse_arguments: "
         . "production [".stringify_bool($args_hash_ref->{ARG_PRODUCTION})."] "
@@ -1124,7 +1319,8 @@ sub parse_arguments {
         . "skip_bggxml [".stringify_bool($args_hash_ref->{ARG_SKIP_BGGXML})."] "
         . "skip_things [".stringify_bool($args_hash_ref->{ARG_SKIP_THINGS})."] "
         . "skip_items [".stringify_bool($args_hash_ref->{ARG_SKIP_ITEMS})."] "
-        . "skip_firebase: [".stringify_bool($args_hash_ref->{ARG_SKIP_FIREBASE})."]"
+        . "skip_firebase: [".stringify_bool($args_hash_ref->{ARG_SKIP_FIREBASE})."] "
+        . "months_of_plays: [".$args_hash_ref->{ARG_MONTHS_OF_PLAYS}."]"
     );
 }
 

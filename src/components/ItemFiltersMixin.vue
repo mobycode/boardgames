@@ -22,6 +22,12 @@ export default {
             return numplays[selectedOwner] || '';
         },
 
+        filterItemLastPlayed(item, selectedOwner) {
+            let lastplayed = item.lastplayed || {};
+            lastplayed = lastplayed[selectedOwner] || '';
+            return lastplayed ? moment.unix(lastplayed).format('MM/DD/YYYY') : '';
+        },
+
         filterItemPlayTime(item, deviceSizeValue) {
             let str = "",
                 min = item.minplaytime,
