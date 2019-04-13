@@ -3,7 +3,7 @@
     <div class="flex-page-item">
         <app-table-header></app-table-header>
     </div>
-    <div class="flex-page-item-grow" data-simplebar>
+    <div class="flex-page-item-grow" :data-simplebar="useSimpleBar">
         <app-table-body></app-table-body>
     </div>
 </div>
@@ -16,6 +16,11 @@ import TableBody from './TableBody.vue';
 
 export default {
     name: 'app',
+    data() {
+        return {
+          useSimpleBar: true // !/iphone|ipad/i.test(navigator.userAgent)
+        }
+    },
     components: {
         appTableHeader: TableHeader,
         appTableBody: TableBody

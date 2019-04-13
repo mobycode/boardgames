@@ -1,7 +1,7 @@
 <template>
 <div class="flex-page-item flex-page-content flex-page-item-grow" v-on:scroll="onScroll" DELETEME-data-simplebar>
     <div class="flex-page-item-grow">
-        <div class="container-fluid tbody">
+        <div class="container-fluid tbody" ref="nonSimpleBarScroller">
             <div class="row">
                 <div v-if="filteredItems.length === 0" class="col no-matches">
                     <div class="row tr">
@@ -42,6 +42,10 @@ import {
 
 export default {
     mixins: [ItemFiltersMixin],
+        return {
+          useSimpleBar: !/iphone|ipad/i.test(navigator.userAgent)
+        }
+    },
     computed: {
         deviceSizeValue() {
             return this.$store.getters.deviceSizeValue;
@@ -111,12 +115,18 @@ export default {
                 return;
             }
 
-            var scrollerRect = this.scroller.getBoundingClientRect(),
+            var scrollerRect, scrollerTop, scrollerHeight, minBottom, maxTop, cardRect, cardTop, img, src, done;
+
+            if (this.useSimpleBar) {
+                scrollerRect = this.scroller.getBoundingClientRect();
                 scrollerTop = scrollerRect.top,
-                scrollerHeight = scrollerRect.height,
-                minBottom = (scrollerTop - scrollerHeight),
-                maxTop = (scrollerTop + (2 * scrollerHeight)),
-                cardRect, cardTop, img, src, done;
+                scrollerHeight = scrollerRect.height;
+            } else {
+                scrollerTop = this.scroller.scrollTop;
+                scrollerHeight = this.scroller.clientHeight;
+            }
+            minBottom = (scrollerTop - scrollerHeight);
+            maxTop = (scrollerTop + (2 * scrollerHeight));
 
             //console.log(`<> Tiles::updateCards: minBottom [${minBottom}] maxTop [${maxTop}]`);
 
@@ -143,7 +153,9 @@ export default {
         filteredItems(value) {
             // when # of displayed items changes, update image src attributes and update simplebar
             this.updateCards();
-            this.simplebar.recalculate();
+            if (this.simplebar) {
+                this.simplebar.recalculate();
+            }
         }
     },
     beforeMount() {
@@ -158,8 +170,12 @@ export default {
     },
     mounted() {
         //console.log(`<> Tiles::mounted`);
-        this.simplebar = new SimpleBar(this.$el);
-        this.scroller = this.simplebar.getScrollElement();
+        if (this.useSimpleBar) {
+            this.simplebar = new SimpleBar(this.$el);
+            this.scroller = this.simplebar.getScrollElement();
+        } else {
+            this.scroller = this.$refs.nonSimpleBarScroller;
+        }
         this.scroller.addEventListener('scroll', this.onScroll);
 
         window.addEventListener('resize', this.onResize);

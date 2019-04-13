@@ -22,10 +22,17 @@ export default {
             return numplays[selectedOwner] || '';
         },
 
-        filterItemLastPlayed(item, selectedOwner) {
+        filterItemLastPlayed(item, selectedOwner, deviceSizeValue) {
             let lastplayed = item.lastplayed || {};
             lastplayed = lastplayed[selectedOwner] || '';
-            return lastplayed ? moment.unix(lastplayed).format('MM/DD/YYYY') : '';
+            let format = 'MM/YY';
+            if (lastplayed) {
+              if (deviceSizeValue && deviceSizeValue > 3) {
+                format = 'MM/DD/YYYY';
+              }
+              lastplayed = moment.unix(lastplayed).format(format)
+            }
+            return lastplayed;
         },
 
         filterItemPlayTime(item, deviceSizeValue) {

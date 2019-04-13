@@ -25,7 +25,7 @@
                         <span :title="item | filterItemPlayTime(deviceSizeValue)">{{ item | filterItemPlayTime(deviceSizeValue) }}</span>
                     </div>
                     <div class="td d-none d-md-block col-md col-lg-1 col-xl-1 numplays" v-if="showNumPlays"><span :title="item | filterItemPlays(selectedOwner)">{{ item | filterItemPlays(selectedOwner) }}</span></div>
-                    <div class="td d-none d-md-block col-md col-lg-1 col-xl-1 lastplayed" v-else><span :title="item | filterItemLastPlayed(selectedOwner)">{{ item | filterItemLastPlayed(selectedOwner) }}</span></div>
+                    <div class="td d-none d-md-block col-md col-lg col-xl-1 lastplayed" v-else><span :title="item | filterItemLastPlayed(selectedOwner, deviceSizeValue)">{{ item | filterItemLastPlayed(selectedOwner, deviceSizeValue) }}</span></div>
                     <div class="td d-none d-lg-block col-lg col-xl owners"><span :title="item.ownersString">{{ item.ownersString }}</span></div>
                 </div>
             </div>
