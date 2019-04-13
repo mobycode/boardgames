@@ -42,6 +42,7 @@ import {
 
 export default {
     mixins: [ItemFiltersMixin],
+    data() {
         return {
           useSimpleBar: !/iphone|ipad/i.test(navigator.userAgent)
         }
