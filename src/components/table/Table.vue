@@ -3,7 +3,7 @@
     <div class="flex-page-item">
         <app-table-header></app-table-header>
     </div>
-    <div class="flex-page-item-grow" :data-simplebar="useSimpleBar">
+    <div class="flex-page-item-grow table-body" :data-simplebar="useSimpleBar">
         <app-table-body></app-table-body>
     </div>
 </div>
@@ -18,7 +18,7 @@ export default {
     name: 'app',
     data() {
         return {
-          useSimpleBar: true // !/iphone|ipad/i.test(navigator.userAgent)
+          useSimpleBar: true || !/iphone|ipad/i.test(navigator.userAgent)
         }
     },
     components: {
