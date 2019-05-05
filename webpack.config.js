@@ -2,7 +2,7 @@ var path = require('path')
 var webpack = require('webpack')
 // webpack.config.js
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   entry: './src/main.js',
@@ -57,9 +57,7 @@ module.exports = {
     }
   },
   optimization: {
-    minimizer: [
-      new UglifyJsPlugin()
-    ]
+    minimizer: [new TerserPlugin()],
   },
   devServer: {
     historyApiFallback: true,
