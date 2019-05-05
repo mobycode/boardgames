@@ -18,7 +18,7 @@ export default {
     name: 'app',
     data() {
         return {
-          useSimpleBar: !/ipad/i.test(navigator.userAgent)
+          useSimpleBar: true
         }
     },
     components: {

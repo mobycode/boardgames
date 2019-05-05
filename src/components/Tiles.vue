@@ -44,7 +44,7 @@ export default {
     mixins: [ItemFiltersMixin],
     data() {
         return {
-          useSimpleBar: !/ipad/i.test(navigator.userAgent)
+          useSimpleBar: true
         }
     },
     computed: {
