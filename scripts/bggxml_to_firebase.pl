@@ -1029,9 +1029,8 @@ sub process_plays {
 }
 
 sub process_expansions {
-    my (@allobjectids, $objectid, $updated, $updates, $base_item_ref, $exp_item_ref, $str, $name, $i, $j);
-    my ($base_minplayers, $base_maxplayers, $base_minplaytime, $base_maxplaytime);
-    my ($exp_minplayers, $exp_maxplayers, $exp_minplaytime, $exp_maxplaytime);
+    my (@allobjectids, $objectid, $updates, $base_item_ref, $exp_item_ref, $str, $i, $j);
+    my ($base_name, $base_minplayers, $base_maxplayers, $exp_name, $exp_minplayers, $exp_maxplayers);
 
     _enter("process_expansions(".keys(%$items_hash_ref).")");
 
@@ -1048,7 +1047,6 @@ sub process_expansions {
 
         $exp_item_ref = $items_hash_ref->{$objectid};
         $base_item_ref = undef;
-        $updated = FALSE;
 
         if ($exp_item_ref->{&ITEM_KEY_SUBTYPE} ne "boardgameexpansion") {
             next;
@@ -1062,37 +1060,25 @@ sub process_expansions {
             next;
         }
 
-        $name = $base_item_ref->{&ITEM_KEY_NAME};
-        $base_minplayers  = $base_item_ref->{&ITEM_KEY_MINPLAYERS };
-        $base_maxplayers  = $base_item_ref->{&ITEM_KEY_MAXPLAYERS };
-        $base_minplaytime = $base_item_ref->{&ITEM_KEY_MINPLAYTIME};
-        $base_maxplaytime = $base_item_ref->{&ITEM_KEY_MAXPLAYTIME};
-        $exp_minplayers   =  $exp_item_ref->{&ITEM_KEY_MINPLAYERS };
-        $exp_maxplayers   =  $exp_item_ref->{&ITEM_KEY_MAXPLAYERS };
-        $exp_minplaytime  =  $exp_item_ref->{&ITEM_KEY_MINPLAYTIME};
-        $exp_maxplaytime  =  $exp_item_ref->{&ITEM_KEY_MAXPLAYTIME};
+        $base_name = $base_item_ref->{&ITEM_KEY_NAME};
+        $exp_name  =  $exp_item_ref->{&ITEM_KEY_NAME};
+        $base_minplayers = $base_item_ref->{&ITEM_KEY_MINPLAYERS };
+        $base_maxplayers = $base_item_ref->{&ITEM_KEY_MAXPLAYERS };
+         $exp_minplayers =  $exp_item_ref->{&ITEM_KEY_MINPLAYERS };
+         $exp_maxplayers =  $exp_item_ref->{&ITEM_KEY_MAXPLAYERS };
 
-        if ( ($exp_minplayers != -1  && $base_minplayers  > $exp_minplayers )
-          || ($exp_maxplayers != -1  && $base_maxplayers  < $exp_maxplayers )
-          || ($exp_minplaytime != -1 && $base_minplaytime < $exp_minplaytime)
-          || ($exp_maxplaytime != -1 && $base_maxplaytime > $exp_maxplaytime) )
-        {
-            $updated = TRUE;
-        } else {
-        }
+        $exp_minplayers = ($exp_minplayers  > 0 && $exp_minplayers < $base_minplayers ? $exp_minplayers : $base_minplayers);
+        $exp_maxplayers = ($exp_maxplayers  > 0 && $exp_maxplayers > $base_maxplayers ? $exp_maxplayers : $base_maxplayers);
 
         $base_item_ref->{&ITEM_KEY_EXPANSIONS}->{$objectid} = TRUE;
-        if ($updated) {
+        if ( ($base_minplayers != $exp_minplayers) || ($base_maxplayers != $exp_maxplayers) ) {
             $updates++;
-            $base_item_ref->{&ITEM_KEY_MINPLAYERS };
-            $base_item_ref->{&ITEM_KEY_MAXPLAYERS };
-            $base_item_ref->{&ITEM_KEY_MINPLAYTIME};
-            $base_item_ref->{&ITEM_KEY_MAXPLAYTIME};
-            #_debug("process_expansions: added stats to base game $name for expansion " . $exp_item_ref->{&ITEM_KEY_NAME});
-            #_debug("process_expansions:     ${base_minplayers}-${base_maxplayers}p ${base_minplaytime}-${base_maxplaytime}min");
-            #_debug("process_expansions:     ${exp_minplayers}-${exp_maxplayers}p ${exp_minplaytime}-${exp_maxplaytime}min");
+            $base_item_ref->{&ITEM_KEY_MINPLAYERS } = $exp_minplayers ;
+            $base_item_ref->{&ITEM_KEY_MAXPLAYERS } = $exp_maxplayers ;
+            _debug("process_expansions: ${base_minplayers}-${base_maxplayers}p -> ${exp_minplayers}-${exp_maxplayers}p for ${base_name} with ${exp_name}");
         }
     }
+
     _exit("process_expansions: $updates updates");
 };# end process_expansions
 
