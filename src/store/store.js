@@ -325,6 +325,10 @@ const mutations = {
             sortItems(state);
         }
         console.log('<- store::SELECT_OWNER');
+    },
+    'TOGGLE_PLAYS' (state) {
+        //console.log("<> store::TOGGLE_PLAYS: "+!state.showNumPlays);
+        state.showNumPlays = !state.showNumPlays;
     }
 };
 
@@ -369,6 +373,22 @@ const actions = {
         update.owner = state.ownersWithPlays[(state.ownersWithPlays.indexOf(state.selectedOwner)+1) % state.ownersWithPlays.length];
         commit('SELECT_OWNER', update);
         console.log('<- store::toggleSelectedOwner');
+    },
+    togglePlays({commit, state}, update) {
+        console.log('-> store::togglePlays');
+
+        commit('TOGGLE_PLAYS');
+
+        if (state.sort) {
+            if (state.sort.id === (state.showNumPlays ? 'lastplayed' : 'numplays')) {
+                commit('SET_SORT', {
+                    id: state.showNumPlays ? 'numplays' : 'lastplayed',
+                    ascending: state.sort.ascending
+                });
+            }
+        }
+
+        console.log('<- store::togglePlays');
     },
     resetSelectedOwner({commit}, update) {
         console.log('-> store::resetSelectedOwner');
