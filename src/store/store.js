@@ -170,7 +170,7 @@ const state = {
         types: ['number'],
         ascending: true
     },
-    showNumPlays: true
+    showNumPlays: false
 };
 
 const mutations = {
