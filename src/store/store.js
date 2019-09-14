@@ -400,7 +400,7 @@ const actions = {
         commit('FROM_QUERY');
 
         return new Promise((resolve, reject) => {
-            let lastTime = localStorage.getItem("time") + 0;
+            let lastTime = parseFloat(localStorage.getItem("time") || 0);
             let lastItems = localStorage.getItem("items");
 
             const setItems = (items, time) => {
