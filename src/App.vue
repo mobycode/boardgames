@@ -167,6 +167,30 @@ body
     //background-color: rgba(255,0,255,.1);
     //border: 1px solid grey;
 
+/* shrink bootstrap gutters to 4px for xs and 8px for sm */
+$gutterMap: ( "xs": ( "bootstrap": "", "min": 0px, "max": 576px, "gutter": 4px ), "sm": ( "bootstrap": "-sm", "min": 576px, "max": 768px, "gutter": 8px ) )
+@each $id, $props in $gutterMap
+  $min: map-get($props, "min")
+  $max: map-get($props, "max")
+  $gutter: map-get($props, "gutter")
+  $bootstrap: map-get($props, "bootstrap")
+
+  @media (min-width: $min) and (max-width: $max)
+    .device-#{$id}
+      &.container-fluid,
+      .container-fluid,
+      .col,
+      .col#{$bootstrap}
+        padding-right: $gutter
+        padding-left: $gutter
+      @for $i from 0 through 6
+        .col#{$bootstrap}-#{$i}
+          padding-left: $gutter
+          padding-right: $gutter
+      .row
+        margin-right: -$gutter
+        margin-left: -$gutter
+
 .debug-info
     display: none
     position: fixed

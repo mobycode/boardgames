@@ -2,7 +2,7 @@
 <div class="container-fluid thead" :class="{ 'sort-descending': isSortDescending }">
     <div class="row">
         <div class="th sortable d-none d-sm-block col-sm col-md col-lg-1 col-xl-1" @click="sortBy('rank')"><span :class="{ sorted: isSorted('rank') }">Rank</span></div>
-        <div class="th sortable col-6 col-sm-5 col-md-4 col-lg-3 col-xl-3" @click="sortBy('name')"><span :class="{ sorted: isSorted('name') }">Name</span></div>
+        <div class="th sortable col-5 col-sm-4 col-md-4 col-lg-3 col-xl-3" @click="sortBy('name')"><span :class="{ sorted: isSorted('name') }">Name</span></div>
         <div class="th sortable d-none d-sm-block col-sm col-md col-lg-1 col-xl-1" @click="sortBy('weight')"><span :class="{ sorted: isSorted('weight') }">Wei<wbr>ght</span></div>
         <div class="th d-none d-lg-block col-lg col-xl">
             <div class="row">
@@ -13,12 +13,12 @@
                 <div class="sortable col-6" @click="sortBy('maxplayers')"><span :class="{ sorted: isSorted('maxplayers') }">Max</span></div>
             </div>
         </div>
-        <div class="th sortable col-3 col-sm col-md d-lg-none" @click="sortBy('players')"><span :class="{ sorted: isSorted('players') }">Play<wbr>ers</span></div>
+        <div class="th sortable col col-sm col-md d-lg-none" @click="sortBy('players')"><span :class="{ sorted: isSorted('players') }">Play<wbr>ers</span></div>
         <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('bestplayers')"><span :class="{ sorted: isSorted('bestplayers') }">Best</span></div>
         <div class="th sortable d-none d-lg-block col-lg col-xl-1" @click="sortBy('recplayers')"><span :class="{ sorted: isSorted('recplayers') }">Recom<wbr>mended</span></div>
-        <div class="th sortable col-3 col-sm col-md col-lg col-xl-1" @click="sortBy('maxplaytime')"><span :class="{ sorted: isSorted('maxplaytime') }">Play<br>Time</span></div>
-        <div class="th sortable d-none d-md-block col-md col-lg-1 col-xl-1" @click="sortBy('numplays')" v-if="showNumPlays"><span :class="{ sorted: isSorted('numplays') }"><a href="javascript:void(0)" title="Show Last Played" @click.stop="togglePlays()">Plays</a><br>(<a href="javascript:void(0)" @click.stop="toggleOwner()">{{ selectedOwner }}</a>)</span></div>
-        <div class="th sortable d-none d-md-block col-md col-lg col-xl-1" @click="sortBy('lastplayed')" v-else><span :class="{ sorted: isSorted('lastplayed') }"><a href="javascript:void(0)" title="Show Number of Plays" @click.stop="togglePlays()">Played</a><br>(<a href="javascript:void(0)" @click.stop="toggleOwner()">{{ selectedOwner }}</a>)</span></div>
+        <div class="th sortable col col-sm col-md col-lg col-xl-1" @click="sortBy('maxplaytime')"><span :class="{ sorted: isSorted('maxplaytime') }">Play<br>Time</span></div>
+        <div class="th sortable col col-sm col-md col-lg-1 col-xl-1" @click="sortBy('numplays')" v-if="showNumPlays"><span :class="{ sorted: isSorted('numplays') }"><a href="javascript:void(0)" title="Show Last Played" @click.stop="togglePlays()">Plays</a><br>(<a href="javascript:void(0)" @click.stop="toggleOwner()">{{ selectedOwner }}</a>)</span></div>
+        <div class="th sortable col col-sm col-md col-lg col-xl-1" @click="sortBy('lastplayed')" v-else><span :class="{ sorted: isSorted('lastplayed') }"><a href="javascript:void(0)" title="Show Number of Plays" @click.stop="togglePlays()">Played</a><br>(<a href="javascript:void(0)" @click.stop="toggleOwner()">{{ selectedOwner }}</a>)</span></div>
         <div class="th sortable d-none d-lg-block col-lg col-xl" @click="sortBy('owners')"><span :class="{ sorted: isSorted('owners') }">Owners</span></div>
     </div>
 </div>

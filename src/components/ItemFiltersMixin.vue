@@ -14,7 +14,7 @@ export default {
         },
 
         filterItemPlayers(item, deviceSizeValue) {
-            return item.minplayers + (deviceSizeValue && deviceSizeValue < 1 ? "-" : " - ") + item.maxplayers;
+            return item.minplayers + (deviceSizeValue !== undefined && deviceSizeValue < 1 ? "-" : " - ") + item.maxplayers;
         },
 
         filterItemPlays(item, selectedOwner) {
@@ -27,7 +27,7 @@ export default {
             lastplayed = lastplayed[selectedOwner] || '';
             let format = 'MM/YY';
             if (lastplayed) {
-              if (deviceSizeValue && deviceSizeValue > 3) {
+              if (deviceSizeValue !== undefined && deviceSizeValue > 3) {
                 format = 'MM/DD/YYYY';
               }
               lastplayed = moment.unix(lastplayed).format(format)
@@ -43,7 +43,7 @@ export default {
                 if (item.minplaytime === item.maxplaytime) {
                     str = item.maxplaytime;
                 } else {
-                    str = item.minplaytime + (deviceSizeValue < 0 ? "-" : " - ") + item.maxplaytime;
+                    str = item.minplaytime + (deviceSizeValue !== undefined && deviceSizeValue < 1 ? "-" : " - ") + item.maxplaytime;
                 }
             }
             return str;

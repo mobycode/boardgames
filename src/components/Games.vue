@@ -112,12 +112,6 @@ $verticalMargin: 15px
         align-items: stretch /* align items in Cross Axis */
         align-content: stretch /* Extra space in Cross Axis */
 
-.flex-page-item > .container-fluid > .row > .col,
-.flex-page-item-grow > .container-fluid > .row > .col,
-    padding-right: 0px
-    padding-left: 0px
-
-
 .device-xl .game-modal .modal-dialog
     max-width: calc(50vw)
 .device-lg .game-modal .modal-dialog
