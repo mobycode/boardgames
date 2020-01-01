@@ -129,6 +129,8 @@ export default {
 
         span
             position: relative
+        span.sorted
+            display: inline-block
         span.sorted::after
             display: block
             position: absolute
