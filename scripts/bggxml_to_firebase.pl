@@ -101,7 +101,7 @@ use constant PLAYS_USERS_TO_OWNERS => {
   use constant ITEM_KEY_NUMPLAYS => "numplays";
   use constant ITEM_KEY_LASTPLAYED => "lastplayed";
   use constant ITEM_KEY_OWNERS => "owners";
-  use constant ITEM_KEY_PREVOWNERS => "pevowners";
+  use constant ITEM_KEY_PREVOWNERS => "prevowners";
   use constant ITEM_KEY_IMAGE => "image";
   use constant ITEM_KEY_THUMBNAIL => "thumbnail";
   use constant ITEM_KEY_PICTURE => "picture";
@@ -1164,12 +1164,17 @@ sub process_prevowned {
                 $prevowners_ref = {};
                 $item_hash_ref->{&ITEM_KEY_PREVOWNERS} = $prevowners_ref;
             }
-            #_debug("process_prevowned: BEFORE owners = [".stringify($owners_ref)."]");
-            #_debug("process_prevowned: BEFORE prevowners = [".stringify($prevowners_ref)."]");
-            get_owners($prevowners_ref, $owner, TRUE);
-            get_owners($item_hash_ref->{&ITEM_KEY_OWNERS}, $owner, FALSE);
-            #_debug("process_prevowned: AFTER  owners = [".stringify($owners_ref)."]");
-            #_debug("process_prevowned: AFETR  prevowners = [".stringify($prevowners_ref)."]");
+
+            #_debug("process_prevowned: BEFORE owners = [".stringify_hash($owners_ref)."]");
+            #_debug("process_prevowned: BEFORE prevowners = [".stringify_hash($prevowners_ref)."]");
+            if ($item_hash_ref->{&ITEM_KEY_OWNERS}->{$owner}) {
+                _debug("process_prevowned: Prevowned game $objectid ".$item_hash_ref->{&ITEM_KEY_NAME}." is still owned by $owner");
+            } else {
+                get_owners($prevowners_ref, $owner, TRUE);
+                get_owners($item_hash_ref->{&ITEM_KEY_OWNERS}, $owner, FALSE);
+            }
+            #_debug("process_prevowned: AFTER  owners = [".stringify_hash($owners_ref)."]");
+            #_debug("process_prevowned: AFETR  prevowners = [".stringify_hash($prevowners_ref)."]");
         }
     }
 
