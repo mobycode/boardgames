@@ -844,7 +844,7 @@ sub process_things {
     my ($item_hash_ref, $objectid, $name, $update);
     my (%bggitem, $bggitem_ref);
     my ($ratings_hash_ref, $ranks_ref, $boardgame_rank_ref, $rank, $rank_hash_ref);
-    my (@bestplayers, @recplayers, $total, $votes, $best, $rec, $np, $poll_hash_ref, $temp_hash_ref, $result_hash_ref, $playercount_result_hash_ref, $key, $np);
+    my (@bestplayers, @recplayers, $total, $votes, $best, $rec, $np, $poll_hash_ref, $temp_hash_ref, $result_hash_ref, $playercount_result_hash_ref, $key, $np, $expands_ref);
 
     _debug("process_things: bggitems ".@{$things_ref});
 
@@ -911,9 +911,15 @@ sub process_things {
         if ($item_hash_ref->{&ITEM_KEY_SUBTYPE} eq "boardgameexpansion") {
             for my $link_ref (@{$bggitem_ref->{"link"}}) {
                 if ($link_ref->{'@type'} eq "boardgameexpansion") {
-                    $item_hash_ref->{&ITEM_KEY_EXPANDS} = $link_ref->{'@id'};
+                    if (exists($item_hash_ref->{&ITEM_KEY_EXPANDS})) {
+                        $expands_ref = $item_hash_ref->{&ITEM_KEY_EXPANDS};
+                    } else {
+                        $expands_ref = [];
+                        $item_hash_ref->{&ITEM_KEY_EXPANDS} = $expands_ref;
+                    }
+                    push(@{$expands_ref}, $link_ref->{'@id'});
                     #if ($i < 10) {
-                    #    _debug("process_things: $objectid ".$item_hash_ref->{&ITEM_KEY_NAME}." expands ".$item_hash_ref->{&ITEM_KEY_EXPANDS}." ".$item_hash_ref->{$item_hash_ref->{&ITEM_KEY_EXPANDS}}->{&ITEM_KEY_NAME});
+                    #    _debug("process_things: $objectid ".$item_hash_ref->{&ITEM_KEY_NAME}." expands ".$link_ref->{'@id'}." ".$item_hash_ref->{$link_ref->{'@id'}}->{&ITEM_KEY_NAME});
                     #}
                 }
             }
@@ -1030,7 +1036,7 @@ sub process_plays {
 
 sub process_expansions {
     my (@allobjectids, $objectid, $updates, $base_item_ref, $exp_item_ref, $str, $i, $j);
-    my ($base_name, $base_minplayers, $base_maxplayers, $exp_name, $exp_minplayers, $exp_maxplayers);
+    my (@base_ids, $base_id, $base_name, $base_minplayers, $base_maxplayers, $exp_name, $exp_minplayers, $exp_maxplayers);
 
     _enter("process_expansions(".keys(%$items_hash_ref).")");
 
@@ -1052,30 +1058,33 @@ sub process_expansions {
             next;
         }
 
-        if (exists($exp_item_ref->{"expands"})) {
-            $base_item_ref = $items_hash_ref->{$exp_item_ref->{"expands"}};
-        }
+        if (exists($exp_item_ref->{&ITEM_KEY_EXPANDS})) {
+            @base_ids = @{$exp_item_ref->{&ITEM_KEY_EXPANDS}};
+            for $base_id (@base_ids) {
+                $base_item_ref = $items_hash_ref->{$base_id};
 
-        if (not(defined($base_item_ref))) {
-            next;
-        }
+                if (not(defined($base_item_ref))) {
+                    next;
+                }
 
-        $base_name = $base_item_ref->{&ITEM_KEY_NAME};
-        $exp_name  =  $exp_item_ref->{&ITEM_KEY_NAME};
-        $base_minplayers = $base_item_ref->{&ITEM_KEY_MINPLAYERS };
-        $base_maxplayers = $base_item_ref->{&ITEM_KEY_MAXPLAYERS };
-         $exp_minplayers =  $exp_item_ref->{&ITEM_KEY_MINPLAYERS };
-         $exp_maxplayers =  $exp_item_ref->{&ITEM_KEY_MAXPLAYERS };
+                $base_name = $base_item_ref->{&ITEM_KEY_NAME};
+                $exp_name  =  $exp_item_ref->{&ITEM_KEY_NAME};
+                $base_minplayers = $base_item_ref->{&ITEM_KEY_MINPLAYERS };
+                $base_maxplayers = $base_item_ref->{&ITEM_KEY_MAXPLAYERS };
+                 $exp_minplayers =  $exp_item_ref->{&ITEM_KEY_MINPLAYERS };
+                 $exp_maxplayers =  $exp_item_ref->{&ITEM_KEY_MAXPLAYERS };
 
-        $exp_minplayers = ($exp_minplayers  > 0 && $exp_minplayers < $base_minplayers ? $exp_minplayers : $base_minplayers);
-        $exp_maxplayers = ($exp_maxplayers  > 0 && $exp_maxplayers > $base_maxplayers ? $exp_maxplayers : $base_maxplayers);
+                $exp_minplayers = ($exp_minplayers  > 0 && $exp_minplayers < $base_minplayers ? $exp_minplayers : $base_minplayers);
+                $exp_maxplayers = ($exp_maxplayers  > 0 && $exp_maxplayers > $base_maxplayers ? $exp_maxplayers : $base_maxplayers);
 
-        $base_item_ref->{&ITEM_KEY_EXPANSIONS}->{$objectid} = TRUE;
-        if ( ($base_minplayers != $exp_minplayers) || ($base_maxplayers != $exp_maxplayers) ) {
-            $updates++;
-            $base_item_ref->{&ITEM_KEY_MINPLAYERS } = $exp_minplayers ;
-            $base_item_ref->{&ITEM_KEY_MAXPLAYERS } = $exp_maxplayers ;
-            _debug("process_expansions: ${base_minplayers}-${base_maxplayers}p -> ${exp_minplayers}-${exp_maxplayers}p for ${base_name} with ${exp_name}");
+                $base_item_ref->{&ITEM_KEY_EXPANSIONS}->{$objectid} = TRUE;
+                if ( ($base_minplayers != $exp_minplayers) || ($base_maxplayers != $exp_maxplayers) ) {
+                    $updates++;
+                    $base_item_ref->{&ITEM_KEY_MINPLAYERS } = $exp_minplayers ;
+                    $base_item_ref->{&ITEM_KEY_MAXPLAYERS } = $exp_maxplayers ;
+                    _debug("process_expansions: ${base_minplayers}-${base_maxplayers}p -> ${exp_minplayers}-${exp_maxplayers}p for ${base_name} with ${exp_name}");
+                }
+            }
         }
     }
 
