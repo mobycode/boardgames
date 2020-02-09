@@ -6,7 +6,8 @@ require HTTP::Status;
 use Cwd;
 use JSON;
 use XML::XML2JSON;
-use List::MoreUtils qw(first_index);
+use List::MoreUtils qw(first_index uniq);
+
 use Data::Dumper;
 use Scalar::Util qw(looks_like_number); # parseInt equalivent for bggxml numeric values
 use Time::HiRes qw(time usleep); # get_time_stamp (time in microseconds), get_bgg_collection_json (sleep in microseconds)
@@ -1037,6 +1038,7 @@ sub process_plays {
 sub process_expansions {
     my (@allobjectids, $objectid, $updates, $base_item_ref, $exp_item_ref, $str, $i, $j);
     my (@base_ids, $base_id, $base_name, $base_minplayers, $base_maxplayers, $exp_name, $exp_minplayers, $exp_maxplayers);
+    my (@base_rec, @base_best, @exp_rec, @exp_best, @merged_best, @merged_rec, $diff_players, $diff_best, $diff_rec, $message);
 
     _enter("process_expansions(".keys(%$items_hash_ref).")");
 
@@ -1069,20 +1071,46 @@ sub process_expansions {
 
                 $base_name = $base_item_ref->{&ITEM_KEY_NAME};
                 $exp_name  =  $exp_item_ref->{&ITEM_KEY_NAME};
-                $base_minplayers = $base_item_ref->{&ITEM_KEY_MINPLAYERS };
-                $base_maxplayers = $base_item_ref->{&ITEM_KEY_MAXPLAYERS };
-                 $exp_minplayers =  $exp_item_ref->{&ITEM_KEY_MINPLAYERS };
-                 $exp_maxplayers =  $exp_item_ref->{&ITEM_KEY_MAXPLAYERS };
+                $base_minplayers = $base_item_ref->{&ITEM_KEY_MINPLAYERS};
+                $base_maxplayers = $base_item_ref->{&ITEM_KEY_MAXPLAYERS};
+                 $exp_minplayers =  $exp_item_ref->{&ITEM_KEY_MINPLAYERS};
+                 $exp_maxplayers =  $exp_item_ref->{&ITEM_KEY_MAXPLAYERS};
+
+                # merge best/recommended lists
+                 @base_rec = defined($base_item_ref->{&ITEM_KEY_RECOMMENDED_NUMPLAYERS}) ? @{$base_item_ref->{&ITEM_KEY_RECOMMENDED_NUMPLAYERS}} : ();
+                  @exp_rec = defined( $exp_item_ref->{&ITEM_KEY_RECOMMENDED_NUMPLAYERS}) ? @{ $exp_item_ref->{&ITEM_KEY_RECOMMENDED_NUMPLAYERS}} : ();
+                @base_best = defined($base_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS       }) ? @{$base_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS       }} : ();
+                 @exp_best = defined( $exp_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS       }) ? @{ $exp_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS       }} : ();
+
+                @merged_best = sort(uniq((@base_best, @exp_best)));
+                @merged_rec  = sort(uniq((@base_rec,  @exp_rec )));
 
                 $exp_minplayers = ($exp_minplayers  > 0 && $exp_minplayers < $base_minplayers ? $exp_minplayers : $base_minplayers);
                 $exp_maxplayers = ($exp_maxplayers  > 0 && $exp_maxplayers > $base_maxplayers ? $exp_maxplayers : $base_maxplayers);
 
+                # update base game and log changes
                 $base_item_ref->{&ITEM_KEY_EXPANSIONS}->{$objectid} = TRUE;
-                if ( ($base_minplayers != $exp_minplayers) || ($base_maxplayers != $exp_maxplayers) ) {
+                my $diff_players = ( ($base_minplayers != $exp_minplayers) || ($base_maxplayers != $exp_maxplayers) );
+                my $diff_best = ($#base_best != $#merged_best);
+                my $diff_rec  = ($#base_rec  != $#merged_rec );
+                if ( $diff_players || $diff_best || $diff_rec ) {
                     $updates++;
-                    $base_item_ref->{&ITEM_KEY_MINPLAYERS } = $exp_minplayers ;
-                    $base_item_ref->{&ITEM_KEY_MAXPLAYERS } = $exp_maxplayers ;
-                    _debug("process_expansions: ${base_minplayers}-${base_maxplayers}p -> ${exp_minplayers}-${exp_maxplayers}p for ${base_name} with ${exp_name}");
+
+                    my $message = "process_expansions: ${base_name} with ${exp_name}";
+                    if ( $diff_players ) {
+                        $base_item_ref->{&ITEM_KEY_MINPLAYERS } = $exp_minplayers ;
+                        $base_item_ref->{&ITEM_KEY_MAXPLAYERS } = $exp_maxplayers ;
+                        $message = "$message, ${base_minplayers}-${base_maxplayers}p -> ${exp_minplayers}-${exp_maxplayers}p";
+                    }
+                    if ( $diff_best ) {
+                        $base_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS } = \@merged_best;
+                        $message = "$message, best ".join(",", @base_best)." -> ".join(",", @merged_best);
+                    }
+                    if ( $diff_rec ) {
+                        $base_item_ref->{&ITEM_KEY_RECOMMENDED_NUMPLAYERS } = \@merged_rec;
+                        $message = "$message, rec ".join(",", @base_rec)." -> ".join(",", @merged_rec);
+                    }
+                    _debug($message);
                 }
             }
         }
