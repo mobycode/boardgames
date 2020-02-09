@@ -1038,7 +1038,7 @@ sub process_plays {
 sub process_expansions {
     my (@allobjectids, $objectid, $updates, $base_item_ref, $exp_item_ref, $str, $i, $j);
     my (@base_ids, $base_id, $base_name, $base_minplayers, $base_maxplayers, $exp_name, $exp_minplayers, $exp_maxplayers);
-    my (@base_rec, @base_best, @exp_rec, @exp_best, @merged_best, @merged_rec, $diff_players, $diff_best, $diff_rec, $message);
+    my (@base_rec, @base_best, @exp_rec, @exp_best, $diff_players, $diff_best, $diff_rec, $message);
 
     _enter("process_expansions(".keys(%$items_hash_ref).")");
 
@@ -1046,6 +1046,7 @@ sub process_expansions {
     $j = 0;
     $updates = 0;
     my $objectid_count = scalar(@allobjectids);
+
     for ($i=0; $i < $objectid_count; $i++) {
         $objectid = $allobjectids[$i];
 
@@ -1082,8 +1083,9 @@ sub process_expansions {
                 @base_best = defined($base_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS       }) ? @{$base_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS       }} : ();
                  @exp_best = defined( $exp_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS       }) ? @{ $exp_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS       }} : ();
 
-                @merged_best = sort(uniq((@base_best, @exp_best)));
-                @merged_rec  = sort(uniq((@base_rec,  @exp_rec )));
+                # create new arrays for each item
+                my @merged_best = map($_ * 1, sort(uniq((@base_best, @exp_best))));
+                my @merged_rec  = map($_ * 1, sort(uniq((@base_rec,  @exp_rec ))));
 
                 $exp_minplayers = ($exp_minplayers  > 0 && $exp_minplayers < $base_minplayers ? $exp_minplayers : $base_minplayers);
                 $exp_maxplayers = ($exp_maxplayers  > 0 && $exp_maxplayers > $base_maxplayers ? $exp_maxplayers : $base_maxplayers);
@@ -1104,11 +1106,11 @@ sub process_expansions {
                     }
                     if ( $diff_best ) {
                         $base_item_ref->{&ITEM_KEY_BEST_NUMPLAYERS } = \@merged_best;
-                        $message = "$message, best ".join(",", @base_best)." -> ".join(",", @merged_best);
+                        $message = "$message, best ".to_json(\@base_best)." -> ".to_json(\@merged_best);
                     }
                     if ( $diff_rec ) {
                         $base_item_ref->{&ITEM_KEY_RECOMMENDED_NUMPLAYERS } = \@merged_rec;
-                        $message = "$message, rec ".join(",", @base_rec)." -> ".join(",", @merged_rec);
+                        $message = "$message, rec ".to_json(\@base_rec)." -> ".to_json(\@merged_rec);
                     }
                     _debug($message);
                 }
