@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import SimpleBar from 'SimpleBar';
+import SimpleBar from 'simplebar';
 import ItemFiltersMixin from './ItemFiltersMixin.vue';
 
 import {

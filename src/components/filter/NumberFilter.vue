@@ -1,4 +1,5 @@
 <template>
+  <div></div>
 </template>
 
 <script>
@@ -6,7 +7,6 @@ import Filter from './Filter.vue';
 import * as comparisons from './comparisons'
 
 import {
-    required,
     requiredIf,
     minValue
 } from 'vuelidate/lib/validators';
@@ -68,7 +68,7 @@ export default {
             return invalid;
         },
         filteredString() {
-            let str = this._oldFilteredString;
+            let str // = this._oldFilteredString;
             if (!this.invalid) {
                 str = `${this.actions.indexOf(this.action)}_${this.enabled}`;
                 if (this.valueCount === 1) {
@@ -79,7 +79,7 @@ export default {
             } else {
                 str = 'invalid';
             }
-            this._oldFilteredString = str;
+            //this._oldFilteredString = str; // eslint-disable-line vue/no-side-effects-in-computed-properties
             console.log(`<> NumberFilter::filteredString: ${this.id} - ${this.invalid} ${str}`);
             return str;
         },
@@ -90,21 +90,21 @@ export default {
     validations: {
         // Vuelidate - validations property must use same name as property bound to with v-momdel
         value: {
-            required: requiredIf(function(nestedModel) {
+            required: requiredIf(function() {
                 return (this.valueCount === 1);
             }),
             number: number,
             minVal: minValue(1)
         },
         minValue: {
-            required: requiredIf(function(nestedModel) {
+            required: requiredIf(function() {
                 return (this.valueCount === 2);
             }),
             number,
             minValue: minValue(1)
         },
         maxValue: {
-            required: requiredIf(function(nestedModel) {
+            required: requiredIf(function() {
                 return (this.valueCount === 2);
             }),
             number,
@@ -172,7 +172,7 @@ export default {
                 }
             }
         },
-        autoEnable(evt) {
+        autoEnable() {
             if (!this.invalid) {
                 this.enabled = true;
                 console.log(`<> NumberFilter::autoEnable: ${this.id}`);
@@ -202,14 +202,11 @@ export default {
             });
         },
         fromQuery() {
-            let filterQuery,
-                query = this.$route.query,
+            let query = this.$route.query,
                 parser = Number[this.valuePrecision === 0 ? 'parseInt' : 'parseFloat'],
                 parseNumber = (val) => {
                     return val ? parser(val, 10) : undefined;
-                },
-                val, min, max, idx;
-
+                };
 
             //console.log(`-> NumberFilter::fromQuery: ${this.id} ${query}`);
 

@@ -15,17 +15,17 @@
                     <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
                         <div class="form-check dropdown-item">
                             <label class="form-check-label">
-                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="true" @click="setOwned">Owned</input>
+                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="true" @click="setOwned">Owned
                             </label>
                         </div>
-                        <div class="form-check dropdown-item" v-for="owner of allOwners">
+                        <div class="form-check dropdown-item" v-for="owner of allOwners" :key="owner">
                             <label class="form-check-label" style="margin-left: 25px;">
-                                <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!owned">{{ owner }}</input>
+                                <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!owned">{{ owner }}
                             </label>
                         </div>
                         <div class="form-check dropdown-item">
                             <label class="form-check-label">
-                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="false" @click="setOwned">Unowned</input>
+                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="false" @click="setOwned">Unowned
                             </label>
                         </div>
                     </div>
@@ -33,7 +33,6 @@
             </div>
         </div>
     </div>
-</div>
 </div>
 </template>
 
@@ -93,8 +92,7 @@ export default {
     },
     methods: {
         matches(item) {
-            let action = this.action,
-                matches = true;
+            let matches = true;
 
             if (this.enabled) {
                 if (this.owned) {
@@ -140,9 +138,11 @@ export default {
 
             query[this.id] = owners;
 
-            this.$router.push({
-                query: Object.assign({}, this.$route.query, query)
-            });
+            if (this.$route.query[this.id] !== query[this.id]) {
+                this.$router.push({
+                    query: Object.assign({}, this.$route.query, query)
+                  });
+            }
         },
         fromQuery() {
             let query = this.$route.query,

@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import VueResource from 'vue-resource'
-import Vuex from 'vuex'
 
 import App from './App.vue'
 import { routes } from './routes'
@@ -20,7 +19,7 @@ const router = new VueRouter({
     routes: routes
 })
 
-const unsync = sync(store, router);
+sync(store, router);
 
 new Vue({
   el: '#app',

@@ -2,7 +2,7 @@
 <div class="container-fluid" :class="classObject">
     <div class="debug-info mobile-height">{{ mobileHeight }}</div>
     <div class="debug-info device-size">
-        <span v-for="(value, key, index) in DEVICE_SIZES" class="device-detector" :class="value">{{key+': '+index}}&nbsp;&nbsp;</span>
+        <span v-for="(value, key, index) in DEVICE_SIZES" :key="key" class="device-detector" :class="value">{{key+': '+index}}&nbsp;&nbsp;</span>
     </div>
     <router-view></router-view>
 </div>
@@ -10,16 +10,13 @@
 
 <script>
 import Vue from 'vue'
-import moment from 'moment'
+import fixOutline from 'fix-outline'
 import {
     VueMasonryPlugin
 } from 'vue-masonry';
 
 Vue.use(VueMasonryPlugin)
 
-const DEVICE_SIZES = ['sm', 'md', 'lg', 'xl'];
-
-var fixOutline = require('fix-outline');
 fixOutline();
 window.addEventListener('click', () => {
     document.body.classList.remove('kb-nav-used');
@@ -71,7 +68,7 @@ export default {
             name: 'loading',
             query // pass current query so store.state.route.query is defined in loadStore
         });
-        this.$store.dispatch('loadStore').then((data) => {
+        this.$store.dispatch('loadStore').then(() => {
             if (name && !(name === 'loading' || name === 'load-error')) {
                 this.$router.push({
                     name: name
@@ -81,7 +78,7 @@ export default {
                     name: 'table'
                 });
             }
-        }, (error) => {
+        }, () => {
             this.$router.push({
                 name: 'load-error'
             });
@@ -90,7 +87,7 @@ export default {
         this.classObject.mobile = this.mobile;
         this.classObject.desktopSite = this.desktopSite;
 
-        window.addEventListener('resize', (evt) => {
+        window.addEventListener('resize', () => {
             this.setDeviceSize();
         });
     },
@@ -141,7 +138,7 @@ export default {
     },
     watch: {
         $route(to, from) {
-            if (to.path != from.path) { // to prevent an infinite loop
+            if ((this.$route.path !== to.path) && (to.path !== from.path)) {
                 this.$router.replace({
                     query: from.query
                 })
@@ -205,4 +202,11 @@ $gutterMap: ( "xs": ( "bootstrap": "", "min": 0px, "max": 576px, "gutter": 4px )
     right: 0px
 .dev .debug-info
     display: block
+
+// .dev [class="row"]
+//       outline: 1px dotted rgba(0, 0, 0, 0.25)
+// .dev [class*="col-"]
+//       background-color: rgba(255, 0, 0, 0.2)
+//       outline: 1px dotted rgba(0, 0, 0, 0.5)
+
 </style>

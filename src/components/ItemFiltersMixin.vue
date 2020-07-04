@@ -1,7 +1,10 @@
 <template>
+  <div></div>
 </template>
 
 <script>
+import moment from 'moment'
+
 export default {
     filters: {
         filterItemRank(item) {

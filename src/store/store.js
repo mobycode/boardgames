@@ -186,7 +186,7 @@ const mutations = {
         //console.log("<> store::SET_DEVICE_SIZE: "+deviceSize);
         state.deviceSize = deviceSize;
     },
-    'LOAD_ERROR' (state, response) {
+    'LOAD_ERROR' (state) {
         console.log("-> store::LOAD_ERROR");
         state.loadError = true;
         console.log("<- store::LOAD_ERROR");
@@ -374,7 +374,7 @@ const actions = {
         commit('SELECT_OWNER', update);
         console.log('<- store::toggleSelectedOwner');
     },
-    togglePlays({commit, state}, update) {
+    togglePlays({commit}) {
         console.log('-> store::togglePlays');
 
         commit('TOGGLE_PLAYS');
@@ -473,10 +473,10 @@ const getters = {
     desktopSite(state) {
         return state.desktopSite;
     },
-    mobile(state) {
+    mobile() {
         return MOBILE;
     },
-    deviceSizes(state) {
+    deviceSizes() {
         return DEVICE_SIZES;
     },
     mobileHeight(state) {
@@ -515,7 +515,7 @@ const getters = {
     isSortDescending(state) {
         return !state.sort.ascending;
     },
-    allOwners(state) {
+    allOwners() {
         //console.log('<> store::selectedOwner = '+state.selectedOwner)
         return ALL_OWNERS;
     },

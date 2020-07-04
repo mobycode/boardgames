@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import SimpleBar from 'SimpleBar';
+import SimpleBar from 'simplebar';
 import TableHeader from './TableHeader.vue';
 import TableBody from './TableBody.vue';
 

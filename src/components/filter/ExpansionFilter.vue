@@ -27,8 +27,7 @@ export default {
     },
     methods: {
         matches(item) {
-            let action = this.action,
-                matches = true;
+            let matches = true;
 
             if (this.enabled) {
                 matches = item.subtype !== "boardgameexpansion";
@@ -38,11 +37,14 @@ export default {
             return matches;
         },
         toQuery() {
-            this.$router.push({
-                query: Object.assign({}, this.$route.query, {
-                    exp: this.enabled ? undefined : "true"
-                })
-            });
+            const exp = this.enabled ? undefined : "true"
+            if (this.$route.query.exp !== exp) {
+                this.$router.push({
+                    query: Object.assign({}, this.$route.query, {
+                        exp: exp
+                    })
+                });
+            }
         },
         fromQuery() {
             let query = this.$route.query;
@@ -56,7 +58,7 @@ export default {
         }
     },
     watch: {
-        enabled(val) {
+        enabled() {
             this.toQuery();
             this.filterChanged();
         }
