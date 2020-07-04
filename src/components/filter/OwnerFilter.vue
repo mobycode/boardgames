@@ -15,17 +15,22 @@
                     <div class="dropdown-menu" :class="{ show: dropdowns[0].open }">
                         <div class="form-check dropdown-item">
                             <label class="form-check-label">
-                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="true" @click="setOwned">Owned
+                                <input class="form-check-input" type="radio" v-model="owned" value="human" @click="setOwned">Owned
                             </label>
                         </div>
                         <div class="form-check dropdown-item" v-for="owner of allOwners" :key="owner">
                             <label class="form-check-label" style="margin-left: 25px;">
-                                <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!owned">{{ owner }}
+                                <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!isOwnerHuman">{{ owner }}
                             </label>
                         </div>
                         <div class="form-check dropdown-item">
                             <label class="form-check-label">
-                                <input class="form-check-input" type="radio" v-model="owned" v-bind:value="false" @click="setOwned">Unowned
+                                <input class="form-check-input" type="radio" v-model="owned" value="none" @click="setOwned">Unowned
+                            </label>
+                        </div>
+                        <div class="form-check dropdown-item">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" v-model="owned" value="bga" @click="setOwned">BGA
                             </label>
                         </div>
                     </div>
@@ -43,6 +48,7 @@ const OWNER_IAN = 'Ian';
 const OWNER_JASON = 'Jason';
 const OWNER_JOE = 'Joe';
 const OWNER_JUSTIN = 'Justin';
+const OWNER_BGA = 'BGA';
 
 const DROPDOWN_ID = 'ownerDropdownButtonGroup';
 
@@ -57,28 +63,33 @@ export default {
                 OWNER_IAN,
                 OWNER_JASON,
                 OWNER_JOE,
-                OWNER_JUSTIN,
+                OWNER_JUSTIN
             ];
 
         return {
             id: 'owner',
             enabled: true,
-            owned: true,
+            owned: 'human',
             owners: allOwners.slice(),
             allOwners,
             dropdowns
         }
     },
     computed: {
+        isOwnerHuman() {
+          return this.owned === 'human';
+        },
         ownerText() {
             let str = '';
-            if (this.owned) {
+            if (this.owned === 'human') {
                 let len = this.owners.length;
                 if (len > 0 && len < this.allOwners.length) {
                     str = this.owners.join(', ');
                 } else {
                     str = 'anyone';
                 }
+            } else if (this.owned === 'bga') {
+                str = 'BGA';
             } else {
                 str = 'no one';
             }
@@ -95,9 +106,9 @@ export default {
             let matches = true;
 
             if (this.enabled) {
-                if (this.owned) {
+                if (this.owned !== 'none') {
                     if (this.owners.length === 0) {
-                        matches = (item.owners.length > 0);
+                        matches = (item.owners.some(owner => this.allOwners.includes(owner)));
                     } else {
                         matches = (item.owners.length > 0 && item.owners.some(owner => this.owners.includes(owner)));
                     }
@@ -108,7 +119,14 @@ export default {
             return matches;
         },
         setOwned(evt) {
-            this.owners = evt.target.value === "true" ? this.allOwners.slice() : [];
+            let owners;
+            if (evt.target.value === "human") {
+                this.owners = this.allOwners.slice();
+            } else if (evt.target.value === "bga") {
+                this.owners = [OWNER_BGA];
+            } else if (evt.target.value === "none") {
+                this.owners = [];
+            }
         },
         clickOwner(evt) {
             const value = evt.target.value,
@@ -125,7 +143,7 @@ export default {
                 owners;
 
             if (this.enabled) {
-                if (this.owned) {
+                if (this.owned !== 'none') {
                     if (this.owners.length !== this.allOwners.length) {
                         owners = this.owners.slice();
                     }
@@ -156,11 +174,12 @@ export default {
                     } else {
                         this.enabled = true;
                         if (val === "none") {
-                            this.owned = false;
+                            this.owned = 'none';
                         } else if (Array.isArray(val)) {
                             this.owners = val.slice();
+                            this.owned = this.owners.indexOf('BGA') !== -1 ? 'bga' : 'human';
                         } else {
-                            this.owned = true;
+                            this.owned = 'human';
                             this.owners = this.allOwners.slice();
                         }
                     }
@@ -171,7 +190,7 @@ export default {
         },
         reset() {
             this.enabled = true;
-            this.owned = true;
+            this.owned = 'human';
             this.owners = this.allOwners.slice();
         }
     }
