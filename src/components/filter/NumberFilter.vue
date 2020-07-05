@@ -197,9 +197,15 @@ export default {
             query[this.id + 'Min'] = min;
             query[this.id + 'Max'] = max;
 
-            this.$router.push({
-                query: Object.assign({}, this.$route.query, query)
-            });
+            if ((this.$route.query[this.id + 'Idx'] !== idx) ||
+                (this.$route.query[this.id + 'Val'] !== val) ||
+                (this.$route.query[this.id + 'Min'] !== min) ||
+                (this.$route.query[this.id + 'Max'] !== max))
+            {
+                this.$router.push({
+                    query: Object.assign({}, this.$route.query, query)
+                });
+            }
         },
         fromQuery() {
             let query = this.$route.query,

@@ -71,16 +71,19 @@ export default {
         this.$store.dispatch('loadStore').then(() => {
             if (name && !(name === 'loading' || name === 'load-error')) {
                 this.$router.push({
-                    name: name
+                    name: name,
+                    query
                 });
             } else {
                 this.$router.push({
-                    name: 'table'
+                    name: 'table',
+                    query
                 });
             }
         }, () => {
             this.$router.push({
-                name: 'load-error'
+                name: 'load-error',
+                query
             });
         });
         //}, 10000);
@@ -134,15 +137,6 @@ export default {
             this.classObject = Object.assign({}, classObject);
 
             //console.log("<- App::setDeviceSize");
-        }
-    },
-    watch: {
-        $route(to, from) {
-            if ((this.$route.path !== to.path) && (to.path !== from.path)) {
-                this.$router.replace({
-                    query: from.query
-                })
-            }
         }
     }
 }

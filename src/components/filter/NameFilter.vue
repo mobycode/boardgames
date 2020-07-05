@@ -123,12 +123,14 @@ export default {
                 idx = this.actionIndex;
             }
 
-            this.$router.push({
-                query: Object.assign({}, this.$route.query, {
-                    name: val,
-                    nameIdx: idx
-                })
-            });
+            if ((this.$route.query.name !== val) || (this.$route.query.nameIdx !== idx)) {
+                this.$router.push({
+                    query: Object.assign({}, this.$route.query, {
+                        name: val,
+                        nameIdx: idx
+                    })
+                });
+            }
         },
         fromQuery() {
             let query = this.$route.query;

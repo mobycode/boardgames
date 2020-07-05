@@ -99,17 +99,20 @@ export default {
         },
         onTable() {
             this.$router.push({
-                name: 'table'
+                name: 'table',
+                query: this.$route.query
             });
         },
         onTiles() {
             this.$router.push({
-                name: 'tiles'
+                name: 'tiles',
+                query: this.$route.query
             });
         },
         onImage() {
             this.$router.push({
-                name: 'image'
+                name: 'image',
+                query: this.$route.query
             });
         },
         toggleDesktopSite() {

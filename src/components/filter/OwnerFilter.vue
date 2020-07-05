@@ -140,26 +140,41 @@ export default {
         },
         toQuery() {
             let query = {},
+                update = false,
                 owners;
+
+            const ownersChanged = (oldOwners, newOwners) => {
+                const valueToComparable = (value) => {
+                    let array = value;
+                    if (array && !Array.isArray(array)) {
+                        array = [array];
+                    }
+                    return JSON.stringify(array);
+                }
+                return valueToComparable(oldOwners) !== valueToComparable(newOwners);
+            };
 
             if (this.enabled) {
                 if (this.owned !== 'none') {
                     if (this.owners.length !== this.allOwners.length) {
                         owners = this.owners.slice();
                     }
+                    update = ownersChanged(this.$route.query[this.id], owners)
                 } else {
                     owners = "none";
+                    update = (this.$route.query[this.id] !== owners)
                 }
             } else {
-                owners = "off";
+                owners = undefined;
+                update = (this.$route.query[this.id] !== owners)
             }
 
             query[this.id] = owners;
 
-            if (this.$route.query[this.id] !== query[this.id]) {
+            if (update) {
                 this.$router.push({
                     query: Object.assign({}, this.$route.query, query)
-                  });
+                });
             }
         },
         fromQuery() {
@@ -175,12 +190,13 @@ export default {
                         this.enabled = true;
                         if (val === "none") {
                             this.owned = 'none';
-                        } else if (Array.isArray(val)) {
-                            this.owners = val.slice();
-                            this.owned = this.owners.indexOf('BGA') !== -1 ? 'bga' : 'human';
+                            this.owners = [];
+                        } else if (val === "BGA") {
+                            this.owned = 'bga';
+                            this.owners = [OWNER_BGA];
                         } else {
                             this.owned = 'human';
-                            this.owners = this.allOwners.slice();
+                            this.owners = Array.isArray(val) ? val.slice() : this.allOwners.slice();
                         }
                     }
 
