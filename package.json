@@ -14,12 +14,12 @@
   "dependencies": {
     "babel-eslint": "^10.1.0",
     "core-js": "^3.6.5",
+    "firebase": "^7.15.5",
     "fix-outline": "^0.1.1",
     "moment": "^2.26.0",
     "simplebar": "^5.2.0",
     "vue": "^2.6.11",
     "vue-masonry": "^0.11.8",
-    "vue-resource": "^1.5.1",
     "vue-router": "^3.2.0",
     "vuelidate": "^0.7.5",
     "vuex": "^3.4.0",

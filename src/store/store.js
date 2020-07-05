@@ -1,5 +1,20 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/database';
+
+// firebase -> add project (vuejs-stock-trader); copy config
+const config = {
+  apiKey: 'AIzaSyDXMB-G5qA9LtI8VfrJQItTHiPLb-8fNSc',
+  authDomain: 'bgg-games.firebaseapp.com',
+  databaseURL: 'https://bgg-games.firebaseio.com',
+  projectId: 'bgg-games',
+  storageBucket: 'bgg-games.appspot.com',
+  messagingSenderId: '414071529580',
+  appId: '1:414071529580:web:ced3fab891531f60ef3849',
+};
+firebase.initializeApp(config);
 
 /* eslint-disable no-param-reassign */
 Vue.use(Vuex);
@@ -385,40 +400,55 @@ const actions = {
 
       const fetchData = () => {
         console.log('   store::loadStore::fetchData...');
-        Vue.http.get('data.json')
-          .then((response) => response.json())
-          .then((data) => {
+        firebase.auth().signInAnonymously()
+          .then(() => firebase.database().ref('data').once('value'))
+          .then((snapshot) => {
+            const data = snapshot.val();
             if (data) {
               localStorage.setItem('items', JSON.stringify(data.items));
               localStorage.setItem('time', data.time);
               setItems(data.items, data.time);
             }
-          }, (response) => {
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
             console.log('   store::loadStore::fetchData error');
-            console.log(response);
+            console.error(errorMessage);
+            console.error(error);
             if (lastItems) {
               setItems(JSON.parse(localStorage.getItem('items')), lastTime);
             } else {
-              commit('LOAD_ERROR', response);
-              reject(response);
+              commit('LOAD_ERROR', error);
+              reject(error);
             }
           });
       };
 
       const fetchTime = () => {
         console.log('   store::loadStore::fetchTime...');
-        Vue.http.get('data/time.json')
-          .then((response) => response.json())
-          .then((time) => {
+        firebase.auth().signInAnonymously()
+          .then(() => firebase.database().ref('data/time').once('value'))
+          .then((snapshot) => {
+            const time = snapshot.val();
             console.log(`   store::loadStore::fetchTime: time [${time}] lastTime [${lastTime}]`);
             if (time > lastTime) {
               fetchData();
             } else {
               setItems(JSON.parse(localStorage.getItem('items')), lastTime);
             }
-          }, (response) => {
-            console.log('   store::loadStore::fetchTime error');
-            console.log(response);
+          })
+          .catch((error) => {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+
+            if (errorCode === 'auth/operation-not-allowed') {
+              console.error('You must enable Anonymous auth in the Firebase Console.');
+            } else {
+              console.error('   store::loadStore::fetchTime error');
+              console.error(errorMessage);
+              console.error(error);
+            }
             fetchData();
           });
       };
