@@ -70,13 +70,13 @@ const sortValue = (a, b, type, order) => {
   if (type === 'string') {
     rc = a.localeCompare(b) * order;
   } else if (type === 'number') {
-    if (a === -1) {
-      if (b === -1) {
+    if (a === -1 || a === undefined) {
+      if (b === -1 || b === undefined) {
         rc = 0;
       } else {
         rc = 1; // always sort -1 at the end (regardless of sort order)
       }
-    } else if (b === -1) {
+    } else if (b === -1 || b === undefined) {
       rc = -1; // always sort -1 at the end (regardless of sort order)
     } else {
       rc = (a - b) * order;
