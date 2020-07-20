@@ -14,7 +14,7 @@
   "dependencies": {
     "babel-eslint": "^10.1.0",
     "core-js": "^3.6.5",
-    "firebase": "^7.15.5",
+    "firebase": "^7.16.1",
     "fix-outline": "^0.1.1",
     "moment": "^2.27.0",
     "simplebar": "^5.2.1",
