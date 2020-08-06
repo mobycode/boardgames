@@ -8,19 +8,19 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "postbuild": "npm run copy",
-    "copy": "cpx \"dist/**/*.*\" docs/",
+    "copy": "copyfiles -u 1 \"dist/**/*.*\" docs",
     "deploy": "npm run build && npm run copy"
   },
   "dependencies": {
     "babel-eslint": "^10.1.0",
     "core-js": "^3.6.5",
-    "firebase": "^7.16.1",
+    "firebase": "^7.17.1",
     "fix-outline": "^0.1.1",
     "moment": "^2.27.0",
     "simplebar": "^5.2.1",
     "vue": "^2.6.11",
     "vue-masonry": "^0.11.8",
-    "vue-router": "^3.3.4",
+    "vue-router": "^3.4.1",
     "vuelidate": "^0.7.5",
     "vuex": "^3.5.1",
     "vuex-router-sync": "^5.0.0"
@@ -31,12 +31,11 @@
     "@vue/cli-plugin-vuex": "^4.4.6",
     "@vue/cli-service": "^4.4.6",
     "@vue/eslint-config-airbnb": "^5.1.0",
-    "cpx": "^1.5.0",
+    "copyfiles": "^2.3.0",
     "eslint": "^6.7.2",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-vue": "^6.2.2",
     "node-sass": "^4.12.0",
-    "rmdir": "^1.2.0",
     "sass-loader": "^8.0.2",
     "vue-template-compiler": "^2.6.11"
   }
