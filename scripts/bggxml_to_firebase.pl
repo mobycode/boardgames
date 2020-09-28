@@ -708,7 +708,7 @@ sub json_hash_from_file {
 
 sub get_owners {
     my ($owners_ref, $owner, $owns) = @_;
-    #_enter("get_owners([".stringify($owners_ref)."], $owner, $owns)");
+    #_enter("get_owners([".stringify_hash($owners_ref)."], $owner, $owns)");
     if ($owner ne "played") {
         my $e = $owners_ref->{$owner};
         if ($owns) {
@@ -717,7 +717,7 @@ sub get_owners {
             delete $owners_ref->{$owner}
         }
     }
-    #_exit("get_owners([".stringify($owners_ref)."], $owner, $owns): $a");
+    #_exit("get_owners([".stringify_hash($owners_ref)."], $owner, $owns): $a");
 }
 
 
@@ -762,72 +762,80 @@ sub process_user {
             $thumbnail = $bggitem{"thumbnail"}->{'$t'};
             $yearpublished = int($bggitem{"yearpublished"}->{'$t'});
 
-            if ($minplayers == 0 && $maxplayers != 0) {
-                $minplayers = $maxplayers;
-            }
-            if ($maxplayers == 0 && $minplayers != 0) {
-                $maxplayers = $minplayers;
-            }
-
-            if ($minplaytime == -1) {
-                if ($maxplaytime != -1) {
-                    $minplaytime = $maxplaytime;
-                } else {
-                    $minplaytime = $playingtime;
-                }
-            }
-            if ($maxplaytime == -1) {
-                if ($minplaytime != -1) {
-                    $maxplaytime = $minplaytime;
-                } else {
-                    $maxplaytime = $playingtime;
-                }
-            }
-
-            $item_hash_ref = $items_hash_ref->{$objectid};
-            if (exists $items_hash_ref->{$objectid}) {
-                if ($numplays != -1) {
-                    $item_hash_ref->{&ITEM_KEY_NUMPLAYS}->{$owner} = $numplays;
-                } else {
-                    get_owners($item_hash_ref->{&ITEM_KEY_OWNERS}, $owner, $own);
-                    if ($subtype eq "boardgameexpansion" && $item_hash_ref->{&ITEM_KEY_SUBTYPE} ne "boardgameexpansion") {
-                        $item_hash_ref->{&ITEM_KEY_SUBTYPE} = $subtype;
-                    }
-                }
-            } else {
-            #} elsif ($type eq "boardgame" || $type eq "boardgameexpansion") {
-                my $owners_ref = {};
-                get_owners($owners_ref, $owner, $own);
-
-                $item_hash_ref = {
-                    &ITEM_KEY_SUBTYPE       => $subtype,
-                    &ITEM_KEY_NAME          => $name,
-                    &ITEM_KEY_EXPANSIONS    => {},
-                    &ITEM_KEY_MINPLAYERS    => $minplayers,
-                    &ITEM_KEY_MAXPLAYERS    => $maxplayers,
-                    &ITEM_KEY_MINPLAYTIME   => $minplaytime,
-                    &ITEM_KEY_MAXPLAYTIME   => $maxplaytime,
-                    &ITEM_KEY_NUMPLAYS      => {},
-                    &ITEM_KEY_LASTPLAYED    => {},
-                    &ITEM_KEY_OWNERS        => $owners_ref,
-                    &ITEM_KEY_IMAGE         => $image,
-                    &ITEM_KEY_THUMBNAIL     => $thumbnail,
-                    &ITEM_KEY_YEARPBLISHED  => $yearpublished
-                };
-
-                if ($numplays != -1) {
-                    $item_hash_ref->{&ITEM_KEY_NUMPLAYS}->{$owner} = $numplays;
-                }
-
-                #_debug("process_user: \$name [$name]");
-                #_debug("process_user: \$items_hash_ref: ".stringify_hash($item_hash_ref));
-
-                $items_hash_ref->{$objectid} = $item_hash_ref;
-            }
+            add_item($owner, $own, $objectid, $name, $subtype, $numplays, $minplayers, $maxplayers, $playingtime, $minplaytime, $maxplaytime, $image, $thumbnail, $yearpublished);
         } #foreach @bggitems
     } # foreach @types
 
     _exit("process_user");
+}
+
+
+sub add_item {
+    my ($owner, $own, $objectid, $name, $subtype, $numplays, $minplayers, $maxplayers, $playingtime, $minplaytime, $maxplaytime, $image, $thumbnail, $yearpublished) = @_;
+    my ($item_hash_ref);
+
+    if ($minplayers == 0 && $maxplayers != 0) {
+        $minplayers = $maxplayers;
+    }
+    if ($maxplayers == 0 && $minplayers != 0) {
+        $maxplayers = $minplayers;
+    }
+
+    if ($minplaytime == -1) {
+        if ($maxplaytime != -1) {
+            $minplaytime = $maxplaytime;
+        } else {
+            $minplaytime = $playingtime;
+        }
+    }
+    if ($maxplaytime == -1) {
+        if ($minplaytime != -1) {
+            $maxplaytime = $minplaytime;
+        } else {
+            $maxplaytime = $playingtime;
+        }
+    }
+
+    $item_hash_ref = $items_hash_ref->{$objectid};
+    if (exists $items_hash_ref->{$objectid}) {
+        if ($numplays != -1) {
+            $item_hash_ref->{&ITEM_KEY_NUMPLAYS}->{$owner} = $numplays;
+        } else {
+            get_owners($item_hash_ref->{&ITEM_KEY_OWNERS}, $owner, $own);
+            if ($subtype eq "boardgameexpansion" && $item_hash_ref->{&ITEM_KEY_SUBTYPE} ne "boardgameexpansion") {
+                $item_hash_ref->{&ITEM_KEY_SUBTYPE} = $subtype;
+            }
+        }
+    } else {
+    #} elsif ($type eq "boardgame" || $type eq "boardgameexpansion") {
+        my $owners_ref = {};
+        get_owners($owners_ref, $owner, $own);
+
+        $item_hash_ref = {
+            &ITEM_KEY_SUBTYPE       => $subtype,
+            &ITEM_KEY_NAME          => $name,
+            &ITEM_KEY_EXPANSIONS    => {},
+            &ITEM_KEY_MINPLAYERS    => $minplayers,
+            &ITEM_KEY_MAXPLAYERS    => $maxplayers,
+            &ITEM_KEY_MINPLAYTIME   => $minplaytime,
+            &ITEM_KEY_MAXPLAYTIME   => $maxplaytime,
+            &ITEM_KEY_NUMPLAYS      => {},
+            &ITEM_KEY_LASTPLAYED    => {},
+            &ITEM_KEY_OWNERS        => $owners_ref,
+            &ITEM_KEY_IMAGE         => $image,
+            &ITEM_KEY_THUMBNAIL     => $thumbnail,
+            &ITEM_KEY_YEARPBLISHED  => $yearpublished
+        };
+
+        if ($numplays != -1) {
+            $item_hash_ref->{&ITEM_KEY_NUMPLAYS}->{$owner} = $numplays;
+        }
+
+        #_debug("process_user: \$name [$name]");
+        #_debug("process_user: \$items_hash_ref: ".stringify_hash($item_hash_ref));
+
+        $items_hash_ref->{$objectid} = $item_hash_ref;
+    }
 }
 
 
@@ -1244,6 +1252,8 @@ sub bggxml_to_items {
         }
     }
 
+    add_online_items();
+
     process_things(get_bgg_things_json([keys(%$items_hash_ref)], "things"));
     process_things(get_bgg_things_json([keys(%$comp_ids_hash_ref)], "compilations"), TRUE);
 
@@ -1258,6 +1268,51 @@ sub bggxml_to_items {
     _exit("bggxml_to_items");
 }
 
+
+sub add_online_items {
+    _enter("add_online_items");
+
+    my ($online_games_hash_ref, $things_ref, $bggitem_ref, $name_obj, $owner, $own, $objectid, $name, $subtype, $numplays, $minplayers, $maxplayers, $playingtime, $minplaytime, $maxplaytime, $image, $thumbnail, $yearpublished);
+
+    $online_games_hash_ref = json_hash_from_file("online_games", "");
+
+    _debug("keys = " . keys(%$online_games_hash_ref));
+    foreach my $owner (keys(%$online_games_hash_ref)) {
+        _debug("add_online_items: online game owner: $owner (" . length($online_games_hash_ref->{"$owner"}) . ")");
+        $things_ref = get_bgg_things_json($online_games_hash_ref->{"$owner"}, "online_games.${owner}");
+
+        foreach $bggitem_ref (@$things_ref) {
+            if (ref($bggitem_ref->{"name"}) eq "ARRAY") {
+                foreach $name_obj (@{$bggitem_ref->{"name"}}) {
+                    if ($name_obj->{'@type'} eq "primary") {
+                        $name = $name_obj->{'@value'};
+                    }
+                }
+            } else {
+                $name = $bggitem_ref->{"name"}->{'@value'};
+            }
+
+            $own = TRUE;
+            $objectid = $bggitem_ref->{'@id'};
+            $subtype = $bggitem_ref->{'@type'};
+            $numplays = -1;
+            $minplayers = int($bggitem_ref->{'minplayers'}->{'@value'});
+            $maxplayers = int($bggitem_ref->{"maxplayers"}->{'@value'});
+            $playingtime = defined($bggitem_ref->{'playingtime'}->{'@value'}) ? int($bggitem_ref->{'playingtime'}->{'@value'}) : -1;
+            $minplaytime = defined($bggitem_ref->{'minplaytime'}->{'@value'}) ? int($bggitem_ref->{'minplaytime'}->{'@value'}) : -1;
+            $maxplaytime = defined($bggitem_ref->{'maxplaytime'}->{'@value'}) ? int($bggitem_ref->{'maxplaytime'}->{'@value'}) : -1;
+            $image = $bggitem_ref->{"image"}->{'$t'};
+            $thumbnail = $bggitem_ref->{"thumbnail"}->{'$t'};
+            $yearpublished = int($bggitem_ref->{"yearpublished"}->{'@value'});
+
+            #_debug("add_online_items: $owner, $own, $objectid, $name, $subtype, $numplays, $minplayers, $maxplayers, $playingtime, $minplaytime, $maxplaytime, $image, $thumbnail, $yearpublished");
+
+            add_item($owner, $own, $objectid, $name, $subtype, $numplays, $minplayers, $maxplayers, $playingtime, $minplaytime, $maxplaytime, $image, $thumbnail, $yearpublished);
+        }
+    }
+
+    _exit("add_online_items");
+}
 
 sub upload_to_firebase {
     my ($database, $secret, %user_data);
