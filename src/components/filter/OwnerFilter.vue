@@ -55,8 +55,9 @@ const OWNER_IAN = 'Ian';
 const OWNER_JASON = 'Jason';
 const OWNER_JOE = 'Joe';
 const OWNER_JUSTIN = 'Justin';
-const OWNER_BGA = 'BGA';
-const OWNER_BAJ = 'BaJ';
+const OWNER_BOARDGAMEARENA = 'BoardGameArena';
+const OWNER_BOARDGAMECORE = 'BoardGameCore';
+const OWNER_BOITEAJEUX = 'Boiteajeux';
 const OWNER_YUCATA = 'Yucata';
 
 const DROPDOWN_ID = 'ownerDropdownButtonGroup';
@@ -75,8 +76,9 @@ export default {
       OWNER_JUSTIN,
     ];
     const allSites = [
-      OWNER_BGA,
-      OWNER_BAJ,
+      OWNER_BOARDGAMEARENA,
+      OWNER_BOARDGAMECORE,
+      OWNER_BOITEAJEUX,
       OWNER_YUCATA,
     ];
 
@@ -178,10 +180,9 @@ export default {
 
       if (this.enabled) {
         if (this.owned !== 'none') {
-          if (this.owned === 'human') {
-            if (this.owners.length !== this.allHumans.length) {
-              owners = this.owners.slice();
-            }
+          const all = this.isOwnerHuman ? this.allHumans : this.allSites;
+          if (this.owners.length === all.length) {
+            owners = this.isOwnerHuman ? 'human' : 'online';
           } else {
             owners = this.owners.slice();
           }
@@ -214,6 +215,12 @@ export default {
           if (val === 'none') {
             this.owned = 'none';
             this.owners = [];
+          } else if (val === 'human') {
+            this.owned = 'human';
+            this.owners = this.allHumans.slice();
+          } else if (val === 'online') {
+            this.owned = 'online';
+            this.owners = this.allSites.slice();
           } else {
             if (!Array.isArray(val)) {
               val = [val];
