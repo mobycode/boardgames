@@ -25,37 +25,32 @@
 </template>
 
 <script>
-import {
-  mapGetters,
-  mapActions
-} from 'vuex'
-
 const SORTS = {
   rank: 'rank',
   name: {
     id: 'name',
-    type: 'string'
+    type: 'string',
   },
   weight: {
     id: 'weight',
     property: 'weightString',
-    type: 'string'
+    type: 'string',
   },
   minplayers: 'minplayers',
   maxplayers: 'maxplayers',
   players: {
     id: 'players',
-    properties: ['minplayers', 'maxplayers']
+    properties: ['minplayers', 'maxplayers'],
   },
   bestplayers: {
     id: 'bestplayers',
     property: 'bestplayersString',
-    type: 'string'
+    type: 'string',
   },
   recplayers: {
     id: 'recplayers',
     property: 'recplayersString',
-    type: 'string'
+    type: 'string',
   },
   maxplaytime: 'maxplaytime',
   numplays: 'numplays',
@@ -63,14 +58,13 @@ const SORTS = {
   owners: {
     id: 'owners',
     property: 'ownersString',
-    type: 'string'
-  }
-}
-
+    type: 'string',
+  },
+};
 
 export default {
   data() {
-    return {}
+    return {};
   },
   computed: {
     showNumPlays() {
@@ -84,12 +78,12 @@ export default {
     },
     selectedOwner() {
       return this.$store.getters.selectedOwner;
-    }
+    },
   },
   methods: {
     sortBy(id) {
       this.$store.dispatch('setSort', {
-        sort: SORTS[id]
+        sort: SORTS[id],
       });
     },
     isSorted(id) {
@@ -97,14 +91,14 @@ export default {
     },
     toggleOwner() {
       this.$store.dispatch('toggleSelectedOwner', {
-        router: this.$router // pass router so store can update query
+        router: this.$router, // pass router so store can update query
       });
     },
     togglePlays() {
       this.$store.dispatch('togglePlays');
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="sass">

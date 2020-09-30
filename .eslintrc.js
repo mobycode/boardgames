@@ -12,6 +12,7 @@ module.exports = {
   },
   rules: {
     'func-names': 'off',
+    'linebreak-style': ["error", "unix"],
     'max-len': 'off',
     'no-console': 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
@@ -19,7 +20,7 @@ module.exports = {
     'no-minusminus': 'off',
     "vue/max-len": ["error", {
       "code": 150,
-      "template": 300,
+      "template": 500,
       "tabWidth": 2,
       "comments": 150,
   }]
