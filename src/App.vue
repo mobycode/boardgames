@@ -9,157 +9,158 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import fixOutline from 'fix-outline'
+import Vue from 'vue';
+import fixOutline from 'fix-outline';
 import {
-    VueMasonryPlugin
+  VueMasonryPlugin,
 } from 'vue-masonry';
 
-Vue.use(VueMasonryPlugin)
+Vue.use(VueMasonryPlugin);
 
 fixOutline();
 window.addEventListener('click', () => {
-    document.body.classList.remove('kb-nav-used');
+  document.body.classList.remove('kb-nav-used');
 });
 window.addEventListener('keydown', (evt) => {
-    if (["Tab", "ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(evt.key)) {
-        document.body.classList.add('kb-nav-used');
-    }
+  if (['Tab', 'ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(evt.key)) {
+    document.body.classList.add('kb-nav-used');
+  }
 }, true);
 
 export default {
-    name: 'app',
-    components: {},
-    data() {
-        const DEVICE_SIZES = {
-            'sm': 'device-sm d-none d-sm-block d-md-none',
-            'md': 'device-md d-none d-md-block d-lg-none',
-            'lg': 'device-lg d-none d-lg-block d-xl-none',
-            'xl': 'device-xl d-none d-xl-block'
-        };
-        const desktop = !(/android|iphone/i.test(navigator.userAgent) || (/ipad/i.test(navigator.userAgent) && window.innerWidth < 768));
-        return {
-            DEVICE_SIZES,
-            desktop,
-            classObject: {
-                desktop,
-                'device-sm': true,
-                'non-webapp': (window.navigator.standalone !== true),
-                dev: location.port === "8080"
-            }
-        }
+  name: 'app',
+  components: {},
+  data() {
+    const DEVICE_SIZES = {
+      sm: 'device-sm d-none d-sm-block d-md-none',
+      md: 'device-md d-none d-md-block d-lg-none',
+      lg: 'device-lg d-none d-lg-block d-xl-none',
+      xl: 'device-xl d-none d-xl-block',
+    };
+    const desktop = !(/android|iphone/i.test(navigator.userAgent) || (/ipad/i.test(navigator.userAgent) && window.innerWidth < 768));
+    return {
+      DEVICE_SIZES,
+      desktop,
+      classObject: {
+        desktop,
+        'device-sm': true,
+        'non-webapp': (window.navigator.standalone !== true),
+        dev: window.location.port === '8080',
+      },
+    };
+  },
+  computed: {
+    mobileHeight() {
+      return this.$store.getters.mobileHeight;
     },
-    computed: {
-        mobileHeight() {
-            return this.$store.getters.mobileHeight;
-        },
-        desktopSite() {
-            return this.$store.getters.desktopSite;
-        },
-        mobile() {
-            return this.$store.getters.mobile;
-        }
+    desktopSite() {
+      return this.$store.getters.desktopSite;
     },
-    created() {
-        //setTimeout(() => { // uncomment to test store loading
-        let name = this.$route.name,
-            query = this.$route.query;
+    mobile() {
+      return this.$store.getters.mobile;
+    },
+  },
+  created() {
+    // setTimeout(() => { // uncomment to test store loading
+    const { name } = this.$route;
+    const { query } = this.$route;
+    this.$router.push({
+      name: 'loading',
+      query, // pass current query so store.state.route.query is defined in loadStore
+    });
+    this.$store.dispatch('loadStore').then(() => {
+      if (name && !(name === 'loading' || name === 'load-error')) {
         this.$router.push({
-            name: 'loading',
-            query // pass current query so store.state.route.query is defined in loadStore
+          name,
+          query,
         });
-        this.$store.dispatch('loadStore').then(() => {
-            if (name && !(name === 'loading' || name === 'load-error')) {
-                this.$router.push({
-                    name: name,
-                    query
-                });
-            } else {
-                this.$router.push({
-                    name: 'table',
-                    query
-                });
-            }
-        }, () => {
-            this.$router.push({
-                name: 'load-error',
-                query
-            });
+      } else {
+        this.$router.push({
+          name: 'table',
+          query,
         });
-        //}, 10000);
-        this.classObject.mobile = this.mobile;
-        this.classObject.desktopSite = this.desktopSite;
+      }
+    }, () => {
+      this.$router.push({
+        name: 'load-error',
+        query,
+      });
+    });
+    // }, 10000);
+    this.classObject.mobile = this.mobile;
+    this.classObject.desktopSite = this.desktopSite;
 
-        window.addEventListener('resize', () => {
-            this.setDeviceSize();
-        });
-    },
-    mounted() {
-        this.setDeviceSize();
-    },
-    methods: {
-        setDeviceSize() {
-            let deviceSize = 'xs',
-                classObject = Object.assign({}, this.classObject),
-                el;
+    window.addEventListener('resize', () => {
+      this.setDeviceSize();
+    });
+  },
+  mounted() {
+    this.setDeviceSize();
+  },
+  methods: {
+    setDeviceSize() {
+      let deviceSize = 'xs';
+      const classObject = { ...this.classObject };
+      let el;
 
-            //console.log("-> App::setDeviceSize");
-            classObject['device-xs'] = false;
-            for (const size in this.DEVICE_SIZES) {
-                classObject['device-' + size] = false;
-                el = document.querySelector('.device-detector.device-' + size);
-                if (el) {
-                    //console.log("   App::setDeviceSize: size [" + size + "] display [" + getComputedStyle(el).getPropertyValue("display") + "]");
-                    if (getComputedStyle(el).getPropertyValue("display") === 'block') {
-                        deviceSize = size;
-                    }
-                }
-            }
-
-            //console.log("   App::setDeviceSize: " + this.$store.getters.deviceSize + " !== " + deviceSize);
-            classObject['device-' + deviceSize] = true;
-            if (this.$store.getters.deviceSize !== deviceSize) {
-                this.$store.dispatch('setDeviceSize', {
-                    deviceSize: deviceSize
-                });
-                //console.log("   App::setDeviceSize: new DEVICE_SIZE = " + deviceSize);
-            }
-
-            if (/iphone|ipad/i.test(navigator.userAgent)) {
-                let mobileHeight = window.innerHeight - 30;
-                //alert(`<> App::setDeviceSize: inner ${window.innerHeight} outer ${window.outerHeight} body ${document.body.clientHeight}`);
-                document.body.style.height = mobileHeight + 'px';
-                this.$store.dispatch('setMobileHeight', {
-                    mobileHeight
-                });
-            }
-
-            this.classObject = Object.assign({}, classObject);
-
-            //console.log("<- App::setDeviceSize");
+      // console.log("-> App::setDeviceSize");
+      classObject['device-xs'] = false;
+      Object.keys(this.DEVICE_SIZES).forEach((size) => {
+        classObject[`device-${size}`] = false;
+        el = document.querySelector(`.device-detector.device-${size}`);
+        if (el) {
+          // console.log("   App::setDeviceSize: size [" + size + "] display [" + getComputedStyle(el).getPropertyValue("display") + "]");
+          if (getComputedStyle(el).getPropertyValue('display') === 'block') {
+            deviceSize = size;
+          }
         }
-    }
-}
+      });
+
+      // console.log("   App::setDeviceSize: " + this.$store.getters.deviceSize + " !== " + deviceSize);
+      classObject[`device-${deviceSize}`] = true;
+      if (this.$store.getters.deviceSize !== deviceSize) {
+        this.$store.dispatch('setDeviceSize', {
+          deviceSize,
+        });
+        // console.log("   App::setDeviceSize: new DEVICE_SIZE = " + deviceSize);
+      }
+
+      if (/iphone|ipad/i.test(navigator.userAgent)) {
+        const mobileHeight = window.innerHeight - 30;
+        // alert(`<> App::setDeviceSize: inner ${window.innerHeight} outer ${window.outerHeight} body ${document.body.clientHeight}`);
+        document.body.style.height = `${mobileHeight}px`;
+        this.$store.dispatch('setMobileHeight', {
+          mobileHeight,
+        });
+      }
+
+      this.classObject = { ...classObject };
+
+      // console.log("<- App::setDeviceSize");
+    },
+  },
+};
 </script>
 
 <style lang="sass">
 $verticalMargin: 15px
 
 *, *:before, *:after
-    -moz-box-sizing: border-box
-    -webkit-box-sizing: border-box
-    box-sizing: border-box
+  -moz-box-sizing: border-box
+  -webkit-box-sizing: border-box
+  box-sizing: border-box
 
 html
-    overflow: hidden
+  overflow: hidden
 body
-    margin: $verticalMargin 0px
-    padding: 0px
-    //background-color: rgba(255,0,255,.1);
-    //border: 1px solid grey;
+  margin: $verticalMargin 0px
+  padding: 0px
+  //background-color: rgba(255,0,255,.1);
+  //border: 1px solid grey;
 
 /* shrink bootstrap gutters to 4px for xs and 8px for sm */
-$gutterMap: ( "xs": ( "bootstrap": "", "min": 0px, "max": 576px, "gutter": 4px ), "sm": ( "bootstrap": "-sm", "min": 576px, "max": 768px, "gutter": 8px ) )
+// eslint-disable-next-line max-len
+$gutterMap: ( "xs": ( "bootstrap": "", "min": 0px, "max": 576px, "gutter": 4px ),"sm": ( "bootstrap": "-sm", "min": 576px, "max": 768px, "gutter": 8px ) )
 @each $id, $props in $gutterMap
   $min: map-get($props, "min")
   $max: map-get($props, "max")
@@ -183,24 +184,24 @@ $gutterMap: ( "xs": ( "bootstrap": "", "min": 0px, "max": 576px, "gutter": 4px )
         margin-left: -$gutter
 
 .debug-info
-    display: none
-    position: fixed
-    z-index: 999
-    background-color: #fff
-    text-align: right
+  display: none
+  position: fixed
+  z-index: 999
+  background-color: #fff
+  text-align: right
 .debug-info.mobile-height
-    top: 150px
-    right: 0px
+  top: 150px
+  right: 0px
 .debug-info.device-size
-    top: 200px
-    right: 0px
+  top: 200px
+  right: 0px
 .dev .debug-info
-    display: block
+  display: block
 
 // .dev [class="row"]
-//       outline: 1px dotted rgba(0, 0, 0, 0.25)
+//   outline: 1px dotted rgba(0, 0, 0, 0.25)
 // .dev [class*="col-"]
-//       background-color: rgba(255, 0, 0, 0.2)
-//       outline: 1px dotted rgba(0, 0, 0, 0.5)
+//   background-color: rgba(255, 0, 0, 0.2)
+//   outline: 1px dotted rgba(0, 0, 0, 0.5)
 
 </style>

@@ -1,5 +1,4 @@
 <template>
-  <!-- eslint-disable max-len -->
   <div class="row" :data-filtered="filtered">
     <div class="col">
       <div class="input-group" :class="{'input-group-sm': deviceSizeValue < 2, 'input-group-xs': deviceSizeValue < 0}">
@@ -19,7 +18,7 @@
                   <input class="form-check-input" type="radio" v-model="owned" value="human" @click="setOwned">Owned
                 </label>
               </div>
-              <div class="form-check dropdown-item" v-for="human of allHumans" :key="human">
+              <div class="form-check dropdown-item" v-for="human of ALL_HUMAN_OWNERS" :key="human">
                 <label class="form-check-label" style="margin-left: 25px;">
                   <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="human" :disabled="!isOwnerHuman">{{ human }}
                 </label>
@@ -29,9 +28,9 @@
                   <input class="form-check-input" type="radio" v-model="owned" value="online" @click="setOwned">Online
                 </label>
               </div>
-              <div class="form-check dropdown-item" v-for="site of allSites" :key="site">
+              <div class="form-check dropdown-item" v-for="owner of ALL_ONLINE_OWNERS" :key="owner">
                 <label class="form-check-label" style="margin-left: 25px;">
-                  <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="site" :disabled="!isOwnerOnline">{{ site }}
+                  <input type="checkbox" class="form-check-input" @click="clickOwner" v-model="owners" v-bind:value="owner" :disabled="!isOwnerOnline">{{ owner }}
                 </label>
               </div>
               <div class="form-check dropdown-item">
@@ -45,20 +44,14 @@
       </div>
     </div>
   </div>
-  <!-- eslint-enable max-len -->
 </template>
 
 <script>
 import Filter from './Filter.vue';
 
-const OWNER_IAN = 'Ian';
-const OWNER_JASON = 'Jason';
-const OWNER_JOE = 'Joe';
-const OWNER_JUSTIN = 'Justin';
-const OWNER_BOARDGAMEARENA = 'BoardGameArena';
-const OWNER_BOARDGAMECORE = 'BoardGameCore';
-const OWNER_BOITEAJEUX = 'Boiteajeux';
-const OWNER_YUCATA = 'Yucata';
+import {
+  ALL_HUMAN_OWNERS, ALL_ONLINE_OWNERS,
+} from '../../store/store';
 
 const DROPDOWN_ID = 'ownerDropdownButtonGroup';
 
@@ -69,27 +62,15 @@ export default {
       id: DROPDOWN_ID,
       open: false,
     }];
-    const allHumans = [
-      OWNER_IAN,
-      OWNER_JASON,
-      OWNER_JOE,
-      OWNER_JUSTIN,
-    ];
-    const allSites = [
-      OWNER_BOARDGAMEARENA,
-      OWNER_BOARDGAMECORE,
-      OWNER_BOITEAJEUX,
-      OWNER_YUCATA,
-    ];
 
     return {
       id: 'owner',
       enabled: true,
       owned: 'human',
-      owners: allHumans.slice(),
-      sites: allSites.slice(),
-      allHumans,
-      allSites,
+      owners: ALL_HUMAN_OWNERS.slice(),
+      sites: ALL_ONLINE_OWNERS.slice(),
+      ALL_HUMAN_OWNERS,
+      ALL_ONLINE_OWNERS,
       dropdowns,
     };
   },
@@ -106,10 +87,10 @@ export default {
         str = 'no one';
       } else {
         const len = this.owners.length;
-        let all = this.allHumans;
+        let all = ALL_HUMAN_OWNERS;
         let allLabel = 'anyone';
         if (this.owned === 'online') {
-          all = this.allSites;
+          all = ALL_ONLINE_OWNERS;
           allLabel = 'online';
         }
         if (len > 0 && len < all.length) {
@@ -133,7 +114,7 @@ export default {
       if (this.enabled) {
         if (this.owned !== 'none') {
           if (this.owners.length === 0) {
-            matches = (item.owners.some((owner) => this.allHumans.includes(owner)));
+            matches = (item.owners.some((owner) => ALL_HUMAN_OWNERS.includes(owner)));
           } else {
             matches = (item.owners.length > 0 && item.owners.some((owner) => this.owners.includes(owner)));
           }
@@ -145,9 +126,9 @@ export default {
     },
     setOwned(evt) {
       if (evt.target.value === 'human') {
-        this.owners = this.allHumans.slice();
+        this.owners = ALL_HUMAN_OWNERS.slice();
       } else if (evt.target.value === 'online') {
-        this.owners = this.allSites.slice();
+        this.owners = ALL_ONLINE_OWNERS.slice();
       } else if (evt.target.value === 'none') {
         this.owners = [];
       }
@@ -180,7 +161,7 @@ export default {
 
       if (this.enabled) {
         if (this.owned !== 'none') {
-          const all = this.isOwnerHuman ? this.allHumans : this.allSites;
+          const all = this.isOwnerHuman ? ALL_HUMAN_OWNERS : ALL_ONLINE_OWNERS;
           if (this.owners.length === all.length) {
             owners = this.isOwnerHuman ? 'human' : 'online';
           } else {
@@ -217,15 +198,15 @@ export default {
             this.owners = [];
           } else if (val === 'human') {
             this.owned = 'human';
-            this.owners = this.allHumans.slice();
+            this.owners = ALL_HUMAN_OWNERS.slice();
           } else if (val === 'online') {
             this.owned = 'online';
-            this.owners = this.allSites.slice();
+            this.owners = ALL_ONLINE_OWNERS.slice();
           } else {
             if (!Array.isArray(val)) {
               val = [val];
             }
-            this.owned = this.allSites.includes(val[0]) ? 'online' : 'human';
+            this.owned = ALL_ONLINE_OWNERS.includes(val[0]) ? 'online' : 'human';
             this.owners = val.slice();
           }
 
@@ -236,7 +217,7 @@ export default {
     reset() {
       this.enabled = true;
       this.owned = 'human';
-      this.owners = this.allHumans.slice();
+      this.owners = ALL_HUMAN_OWNERS.slice();
     },
   },
 };

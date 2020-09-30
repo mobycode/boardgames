@@ -11,10 +11,17 @@ module.exports = {
     parser: 'babel-eslint',
   },
   rules: {
-    'max-len': ["error", { "code": 150, "comments": 150 }],
+    'func-names': 'off',
+    'max-len': 'off',
     'no-console': 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-plusplus': 'off',
-    'no-minusminus': 'off'
-  },
+    'no-minusminus': 'off',
+    "vue/max-len": ["error", {
+      "code": 150,
+      "template": 300,
+      "tabWidth": 2,
+      "comments": 150,
+  }]
+},
 };

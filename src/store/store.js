@@ -139,12 +139,49 @@ const OWNER_IAN = 'Ian';
 const OWNER_JASON = 'Jason';
 const OWNER_JOE = 'Joe';
 const OWNER_JUSTIN = 'Justin';
-const ALL_OWNERS = [
+const OWNER_BOARDGAMEARENA = 'BoardGameArena';
+const OWNER_BOARDGAMECORE = 'BoardGameCore';
+const OWNER_BOITEAJEUX = 'Boiteajeux';
+const OWNER_YUCATA = 'Yucata';
+
+export const ALL_OWNERS = [
+  OWNER_IAN,
+  OWNER_JASON,
+  OWNER_JOE,
+  OWNER_JUSTIN,
+  OWNER_BOARDGAMEARENA,
+  OWNER_BOARDGAMECORE,
+  OWNER_BOITEAJEUX,
+  OWNER_YUCATA,
+];
+
+export const ALL_ONLINE_OWNERS = [
+  OWNER_BOARDGAMEARENA,
+  OWNER_BOARDGAMECORE,
+  OWNER_BOITEAJEUX,
+  OWNER_YUCATA,
+];
+
+export const ALL_HUMAN_OWNERS = [
   OWNER_IAN,
   OWNER_JASON,
   OWNER_JOE,
   OWNER_JUSTIN,
 ];
+
+export const ONLINE_OWNER_URLS = {
+  [OWNER_BOARDGAMEARENA]: 'https://boardgamearena.com/',
+  [OWNER_BOARDGAMECORE]: 'http://play.boardgamecore.net/',
+  [OWNER_BOITEAJEUX]: 'http://www.boiteajeux.net/',
+  [OWNER_YUCATA]: 'https://www.yucata.de/en',
+};
+
+export const OWNER_ABBREVIATIONS = {
+  [OWNER_BOARDGAMEARENA]: 'BGA',
+  [OWNER_BOARDGAMECORE]: 'BGCore',
+  [OWNER_BOITEAJEUX]: 'BaJ',
+  [OWNER_YUCATA]: 'Yucata',
+};
 
 const MOBILE = true || /android|iphone|ipad/i.test(navigator.userAgent);
 const DEVICE_SIZES = ['sm', 'md', 'lg', 'xl'];
@@ -181,7 +218,7 @@ const mutations = {
         }
         console.log(`<> store::FROM_QUERY: search ${state.searchString}`);
       }
-      if (query.selectedOwner !== undefined && this.getters.allOwners.includes(query.selectedOwner)) {
+      if (query.selectedOwner !== undefined && this.getters.allHumanOwners.includes(query.selectedOwner)) {
         state.selectedOwner = query.selectedOwner;
         console.log(`<> store::FROM_QUERY: selectedOwner ${state.selectedOwner}`);
       }
@@ -216,7 +253,7 @@ const mutations = {
       // console.log("   store::SET_ITEMS: <- itemsMap.forEach");
     });
 
-    state.ownersWithPlays = ALL_OWNERS.filter((o) => (items.some((item) => (item.numplays || {})[o] !== undefined)));
+    state.ownersWithPlays = ALL_HUMAN_OWNERS.filter((o) => (items.some((item) => (item.numplays || {})[o] !== undefined)));
     state.items = items;
     console.log('   store::SET_ITEMS: set');
     filterItems(state);
@@ -510,9 +547,9 @@ const getters = {
   isSortDescending(state) {
     return !state.sort.ascending;
   },
-  allOwners() {
+  allHumanOwners() {
     // console.log('<> store::selectedOwner = '+state.selectedOwner)
-    return ALL_OWNERS;
+    return ALL_HUMAN_OWNERS;
   },
   showNumPlays(state) {
     return state.showNumPlays;
