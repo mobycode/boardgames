@@ -58,7 +58,8 @@ use constant USERS_TO_OWNERS => {
     "flettz" => "Joe",
     "highexodus" => "Ian",
     "archleech" => "Jason",
-    "BoardGameArena" => "BoardGameArena"
+    "BoardGameArena" => "BoardGameArena",
+    "yucata" => "Yucata"
 };
 
 use constant PLAYS_USERS_TO_OWNERS => {
