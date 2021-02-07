@@ -66,8 +66,8 @@ export default {
     return {
       id: 'owner',
       enabled: true,
-      owned: 'human',
-      owners: ALL_HUMAN_OWNERS.slice(),
+      owned: 'online',
+      owners: ALL_ONLINE_OWNERS.slice(),
       sites: ALL_ONLINE_OWNERS.slice(),
       ALL_HUMAN_OWNERS,
       ALL_ONLINE_OWNERS,
@@ -216,8 +216,8 @@ export default {
     },
     reset() {
       this.enabled = true;
-      this.owned = 'human';
-      this.owners = ALL_HUMAN_OWNERS.slice();
+      this.owned = 'online';
+      this.owners = ALL_ONLINE_OWNERS.slice();
     },
   },
 };
