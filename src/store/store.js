@@ -186,6 +186,28 @@ export const OWNER_ABBREVIATIONS = {
 const MOBILE = true || /android|iphone|ipad/i.test(navigator.userAgent);
 const DEVICE_SIZES = ['sm', 'md', 'lg', 'xl'];
 
+const getLocalStorageItem = (name) => {
+  let value;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      value = localStorage.getItem(name);
+    } catch (e) {
+      // can't use localStorage in incognito mode, ignore error
+    }
+  }
+  return value;
+};
+
+const setLocalStorageItem = (key, value) => {
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      // can't use localStorage in incognito mode, ignore error
+    }
+  }
+};
+
 const mutations = {
   TOGGLE_DESKTOP_SITE(state) {
     // console.log("<> store::TOGGLE_DESKTOP_SITE: "+!state.desktopSite);
@@ -417,8 +439,8 @@ const actions = {
     commit('FROM_QUERY');
 
     return new Promise((resolve, reject) => {
-      const lastTime = parseFloat(localStorage.getItem('time') || 0);
-      const lastItems = localStorage.getItem('items');
+      const lastTime = parseFloat(getLocalStorageItem('time') || 0);
+      const lastItems = getLocalStorageItem('items');
 
       const setItems = (items, time) => {
         console.log(`-> store::loadStore::setItems: items [${Object.keys(items).length}] time [${time}]`);
@@ -442,8 +464,8 @@ const actions = {
           .then((snapshot) => {
             const data = snapshot.val();
             if (data) {
-              localStorage.setItem('items', JSON.stringify(data.items));
-              localStorage.setItem('time', data.time);
+              setLocalStorageItem('items', JSON.stringify(data.items));
+              setLocalStorageItem('time', data.time);
               setItems(data.items, data.time);
             }
           })
@@ -453,7 +475,7 @@ const actions = {
             console.error(errorMessage);
             console.error(error);
             if (lastItems) {
-              setItems(JSON.parse(localStorage.getItem('items')), lastTime);
+              setItems(JSON.parse(getLocalStorageItem('items')), lastTime);
             } else {
               commit('LOAD_ERROR', error);
               reject(error);
@@ -471,7 +493,7 @@ const actions = {
             if (time > lastTime) {
               fetchData();
             } else {
-              setItems(JSON.parse(localStorage.getItem('items')), lastTime);
+              setItems(JSON.parse(getLocalStorageItem('items')), lastTime);
             }
           })
           .catch((error) => {
