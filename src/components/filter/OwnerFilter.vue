@@ -66,8 +66,8 @@ export default {
     return {
       id: 'owner',
       enabled: true,
-      owned: 'online',
-      owners: ALL_ONLINE_OWNERS.slice(),
+      owned: 'human',
+      owners: ALL_HUMAN_OWNERS.slice(),
       sites: ALL_ONLINE_OWNERS.slice(),
       ALL_HUMAN_OWNERS,
       ALL_ONLINE_OWNERS,
@@ -192,22 +192,26 @@ export default {
       if (query) {
         val = query[this.id];
         if (val !== undefined) {
-          this.enabled = true;
-          if (val === 'none') {
-            this.owned = 'none';
-            this.owners = [];
-          } else if (val === 'human') {
-            this.owned = 'human';
-            this.owners = ALL_HUMAN_OWNERS.slice();
-          } else if (val === 'online') {
-            this.owned = 'online';
-            this.owners = ALL_ONLINE_OWNERS.slice();
+          if (val === 'false') {
+            this.enabled = false;
           } else {
-            if (!Array.isArray(val)) {
-              val = [val];
+            this.enabled = true;
+            if (val === 'none') {
+              this.owned = 'none';
+              this.owners = [];
+            } else if (val === 'human') {
+              this.owned = 'human';
+              this.owners = ALL_HUMAN_OWNERS.slice();
+            } else if (val === 'online') {
+              this.owned = 'online';
+              this.owners = ALL_ONLINE_OWNERS.slice();
+            } else {
+              if (!Array.isArray(val)) {
+                val = [val];
+              }
+              this.owned = ALL_ONLINE_OWNERS.includes(val[0]) ? 'online' : 'human';
+              this.owners = val.slice();
             }
-            this.owned = ALL_ONLINE_OWNERS.includes(val[0]) ? 'online' : 'human';
-            this.owners = val.slice();
           }
 
           console.log(`<> OwnerFilter::fromQuery: ${this.owned} ${this.owners}`);
@@ -216,8 +220,8 @@ export default {
     },
     reset() {
       this.enabled = true;
-      this.owned = 'online';
-      this.owners = ALL_ONLINE_OWNERS.slice();
+      this.owned = 'human';
+      this.owners = ALL_HUMAN_OWNERS.slice();
     },
   },
 };

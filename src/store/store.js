@@ -360,7 +360,15 @@ const mutations = {
     router.push({
       query: { ...state.route.query, selectedOwner: (owner === '' || owner === OWNER_JUSTIN) ? undefined : owner },
     });
-    if (state.sort && (state.sort.properties[0] === 'numplays' || state.sort.properties[0] === 'lastplayed')) {
+
+    // re-filter items if Hide played filter is enabled
+    if (state?.filters?.played?.enabled) {
+      filterItems(state);
+    }
+
+    // re-sort items if sorted by play count or last played date
+    const sortProperty = state?.sort?.properties?.[0];
+    if ((sortProperty === 'numplays') || (sortProperty === 'lastplayed')) {
       sortItems(state);
     }
     console.log('<- store::SELECT_OWNER');

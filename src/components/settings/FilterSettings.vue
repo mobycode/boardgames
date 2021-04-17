@@ -22,6 +22,9 @@
     <div class="col-12 col-md-6 col-lg-6 mb-2">
       <app-expansion-filter></app-expansion-filter>
     </div>
+    <div class="col-12 col-md-6 col-lg-6 mb-2">
+      <app-played-filter></app-played-filter>
+    </div>
   </form>
 </div>
 </template>
@@ -34,6 +37,7 @@ import PlayerCountFilter from '../filter/PlayerCountFilter.vue';
 import PlayTimeFilter from '../filter/PlayTimeFilter.vue';
 import OwnerFilter from '../filter/OwnerFilter.vue';
 import ExpansionFilter from '../filter/ExpansionFilter.vue';
+import PlayedFilter from '../filter/PlayedFilter.vue';
 
 export default {
   components: {
@@ -44,6 +48,7 @@ export default {
     appPlayTimeFilter: PlayTimeFilter,
     appOwnerFilter: OwnerFilter,
     appExpansionFilter: ExpansionFilter,
+    appPlayedFilter: PlayedFilter,
   },
   data() {
     return {};
