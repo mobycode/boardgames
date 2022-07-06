@@ -16,7 +16,7 @@
     "core-js": "^3.10.1",
     "firebase": "^7.24.0",
     "fix-outline": "^0.1.1",
-    "moment": "^2.29.1",
+    "moment": "^2.29.4",
     "simplebar": "^5.3.0",
     "vue": "^2.6.12",
     "vue-masonry": "^0.11.8",
