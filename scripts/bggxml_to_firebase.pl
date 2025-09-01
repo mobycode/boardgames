@@ -393,7 +393,7 @@ sub get_bgg_things_json {
 
         _debug("get_bgg_things_json: ".scalar(@allobjectids)." missing $label [@{allobjectids}]");
         $objectid_count = scalar(@allobjectids);
-        $batch_size = 50;
+        $batch_size = 20;
 
         if ($objectid_count == 0) {
             _exit("get_bgg_things_json");
@@ -403,7 +403,7 @@ sub get_bgg_things_json {
         @allthings = @{$things_hash_ref->{"things"}};
     } else {
         $objectid_count = scalar(@allobjectids);
-        $batch_size = $args_hash_ref->{ARG_PRODUCTION} ? 50 : 2;
+        $batch_size = $args_hash_ref->{ARG_PRODUCTION} ? 20 : 2;
         @allthings = ();
     }
 
@@ -417,7 +417,7 @@ sub get_bgg_things_json {
         push(@objectids, $objectid);
 
         if ($i % $batch_size == ($batch_size-1) || $i == ($objectid_count-1)) {
-            #https://www.boardgamegeek.com/xmlapi2/thing?stats=1&id=41114,... 50 max ids
+            #https://www.boardgamegeek.com/xmlapi2/thing?stats=1&id=41114,... 20 max ids
             $url = "https://www.boardgamegeek.com/xmlapi2/thing?stats=1&id=".join(",", @objectids);
             #_debug("get_bgg_things_json: \$url = $url");
 
@@ -628,7 +628,7 @@ sub fetch_bggxml_json {
             $response_hash_ref = @{$responses_ref}[$i];
 
             if (not($response_hash_ref->{"done"})) {
-                _debug("fetch_bggxml_json:   getting ${id}...", LOG_NONEWLINE);
+                _debug("fetch_bggxml_json:   getting ${id}... ${url} ", LOG_NONEWLINE);
                 $response = $skip_http ? undef : $ua->get($url);
                 $response_hash_ref->{"response"} = $response;
 
@@ -645,7 +645,7 @@ sub fetch_bggxml_json {
                     $response_hash_ref->{"done"} = TRUE;
                     $totalDone += 1;
                 } else {
-                    _debug($skip_http ? "skipped" : ($response->code == HTTP::Status->HTTP_ACCEPTED ? "accepted" : "???"), LOG_APPEND);
+                    _debug($skip_http ? "skipped" : ($response->code == HTTP::Status->HTTP_ACCEPTED ? "accepted" : "".$response->code."???"), LOG_APPEND);
                     $rc = FALSE;
                 }
             }
@@ -1184,7 +1184,7 @@ sub process_pictures {
               && keys %{$item_hash_ref->{&ITEM_KEY_OWNERS}} > 0
               && not(exists($item_hash_ref->{&ITEM_KEY_PICTURE})) )
             {
-                _debug("process_pictures: Missing picture for $objectid ".$item_hash_ref->{&ITEM_KEY_NAME});
+                _debug("process_pictures: Missing picture for $objectid ".$item_hash_ref->{&ITEM_KEY_NAME}." (".(join(", ", keys %{$item_hash_ref->{&ITEM_KEY_OWNERS}})).")");
             }
         }
     }
@@ -1432,4 +1432,4 @@ sub main {
 
 
 main();
-1;
+exit(1);
