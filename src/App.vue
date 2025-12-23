@@ -5,6 +5,9 @@
         <span v-for="(value, key, index) in DEVICE_SIZES" :key="key" class="device-detector" :class="value">{{key+': '+index}}&nbsp;&nbsp;</span>
     </div>
     <router-view></router-view>
+    <div class="powered-by-bgg">
+        <img class="powered-by-bgg__image" :src="'/powered-by-bgg.png'" />
+    </div>
 </div>
 </template>
 
@@ -204,4 +207,17 @@ $gutterMap: ( "xs": ( "bootstrap": "", "min": 0px, "max": 576px, "gutter": 4px )
 //   background-color: rgba(255, 0, 0, 0.2)
 //   outline: 1px dotted rgba(0, 0, 0, 0.5)
 
+.powered-by-bgg
+  position: fixed;
+  bottom: 0;
+  right: 0;
+
+.powered-by-bgg__image
+  width: 123px;
+  height: 36px;
+
+@media (max-width : 450px)
+  .powered-by-bgg__image
+    width: 92px;
+    height: 27px;
 </style>

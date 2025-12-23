@@ -122,6 +122,14 @@ my $XML2JSON = XML::XML2JSON->new();
 my $dir = cwd();
 
 
+# read auth token from file
+open my $fh, '<', "$dir/bgg-auth-token.txt"
+    or die "Failed to open auth token file: $!\n";
+my $auth_token = <$fh>;
+chomp $auth_token;
+close $fh;
+
+
 my $args_hash_ref = {};
 my $json_hash_ref = {};
 my $items_hash_ref = {};
@@ -629,6 +637,7 @@ sub fetch_bggxml_json {
 
             if (not($response_hash_ref->{"done"})) {
                 _debug("fetch_bggxml_json:   getting ${id}... ${url} ", LOG_NONEWLINE);
+                $ua->default_header('Authorization' => "Bearer $auth_token");
                 $response = $skip_http ? undef : $ua->get($url);
                 $response_hash_ref->{"response"} = $response;
 
@@ -649,6 +658,8 @@ sub fetch_bggxml_json {
                     $rc = FALSE;
                 }
             }
+
+            usleep(15 * 1000000); # sleep 15s to avoid 429 errors (Too Many Requests)
         }
         _debug("fetch_bggxml_json: end attempt ${attempts}/${max_attempts}");
     }
