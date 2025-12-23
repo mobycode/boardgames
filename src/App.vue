@@ -6,7 +6,7 @@
     </div>
     <router-view></router-view>
     <div class="powered-by-bgg">
-        <img class="powered-by-bgg__image" :src="'/powered-by-bgg.png'" />
+        <img class="powered-by-bgg__image" src="@/assets/powered-by-bgg.png" />
     </div>
 </div>
 </template>
